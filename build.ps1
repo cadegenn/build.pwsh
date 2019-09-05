@@ -217,7 +217,7 @@ edebug("EncodingName = " + [System.Text.Encoding]::Default.EncodingName)
 $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "scripts" + [IO.Path]::DirectorySeparatorChar + ("build-" + $os.mainstream + ".ps1").Replace(' ','').ToLower())
 edebug("buildScript = " + $buildScript)
 if (fileExist "$buildScript") {
-	eexec -exe "$buildScript" "-ProjectPath `$ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
+	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
 } else {
 	efatal($buildScript + " not found.")
 }

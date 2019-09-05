@@ -55,7 +55,8 @@
 	[ValidateScript({
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
-	[switch]$Force = $false
+	[switch]$Force = $false,
+	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
 
@@ -210,10 +211,10 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 #############################
 
 # load common resources
-if (!(fileExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1"))) { efatal "build.inc.ps1 not found." }
-. $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1")
+# if (!(fileExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1"))) { efatal "build.inc.ps1 not found." }
+# . $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1")
 
-$build = Get-BuildRC -From $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.rc")
+# $build = Get-BuildRC -From $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.rc")
 
 if (fileExist($([system.io.path]::GetTempPath() + "os.json"))) {
 	$os = Get-Content $([system.io.path]::GetTempPath() + "os.json") | Convertfrom-Json
@@ -225,7 +226,7 @@ $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ("build-"
 edevel("buildScript = " + $buildScript)
 if (fileExist "$buildScript") {
 	# eexec "$buildScript"
-	eexec -exe "$buildScript" "-d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
+	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
 } else {
 	efatal($buildScript + " not found.")
 }
