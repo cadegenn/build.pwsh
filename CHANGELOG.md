@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 -   imported build system from `pwsh` project
+-	correctly build debian package
+-	correctly build windows setup.exe
+-	correctly build windows cabinet archive file
 
 ### Changed
 
