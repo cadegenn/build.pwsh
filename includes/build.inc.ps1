@@ -68,7 +68,7 @@ function Get-BuildEnvironment {
 	Process {
 		$b = @{}
 		# $b.root = (Resolve-Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "..")).Path
-		$b.root = $ProjectPath
+		$b.root = ($ProjectPath | Resolve-Path).ProviderPath.TrimEnd([IO.Path]::DirectorySeparatorChar)
 		$b.GUID = New-Guid
 		$b.releases = $($b.root + [IO.Path]::DirectorySeparatorChar + "releases")
 		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION"))) { "1.0.0" | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION") }
@@ -139,6 +139,11 @@ function Approve-BuildEnvironment {
 		ebegin("Check project's build.conf.ps1 conf file ($($InputObject.root)/build/build.conf.ps1)")
 		eend $rc11
 
+		# LICENSE
+		$rc13 = (fileExist "$($InputObject.root)/LICENSE")
+		ebegin("Check project's LICENSE file ($($InputObject.root)/LICENSE)")
+		eend $rc13
+
 		# BUILD_DIR
 		$rc5 = $null -ne $InputObject.buildDir
 		# $rc6 = $rc5 -and (dirExist $InputObject.buildDir)
@@ -164,7 +169,7 @@ function Approve-BuildEnvironment {
 		ebegin("Check build number (" + $InputObject.number + ")")
 		eend ($rc8)
 
-		return ($rc1 -and $rc2 -and $rc3 -and $rc4 -and $rc5 -and $rc6 -and $rc7 -and $rc8 -and $rc9 -and $rc10 -and $rc11 -and $rc12)
+		return ($rc1 -and $rc2 -and $rc3 -and $rc4 -and $rc5 -and $rc6 -and $rc7 -and $rc8 -and $rc9 -and $rc10 -and $rc11 -and $rc12 -and $rc13)
 	}
 
 	End {
