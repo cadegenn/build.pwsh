@@ -267,7 +267,9 @@ if ($Global:DEVEL) { $debugLevel = 4 }
 if ($Exe) {
 	ebegin("Building setup " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".exe")
 	# create include file for NSIS
-	$build | Out-NullSoftInstallerScriptHeaderFile -FileName $($ProjectPath + [IO.Path]::DirectorySeparatorChar + "build" + [IO.Path]::DirectorySeparatorChar + "windows" + [IO.Path]::DirectorySeparatorChar + "header.nsi")
+	$build | Out-NullSoftInstallerScriptHeaderFile -FileName "$($build.root)\build\windows\header.nsi"
+	$build.NSIheader = "$($build.root)\build\windows\header.nsi"
+	$build.NSIscript = "$($build.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi"
 
 	# discover where is nsis.exe
 	if (fileExist($(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe"))) { $MAKENSIS = $(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe") }
@@ -276,7 +278,7 @@ if ($Exe) {
 		eerror("makensis.exe not found")
 	} else {
 		edevel("MAKENSIS = " + $MAKENSIS)
-		$rc = eexec -exe "$MAKENSIS" "/V$debugLevel /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 '$($build.buildDir)\windows\header.nsi' '$($build.buildDir)\windows\$($build.PRODUCT_SHORTNAME).nsi'"
+		$rc = eexec -exe "$MAKENSIS" "/V$debugLevel /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 '$($build.NSIheader)' '$($build.NSIscript)'"
 		eend $rc
 	}
 }
