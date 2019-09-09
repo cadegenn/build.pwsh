@@ -1,0 +1,117 @@
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+version: 1.0.0.{build}
+
+# os: WMF 5
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: 
+  # Windows Server 2012
+  - Visual Studio 2015
+  # Windows Server 2016
+  - Visual Studio 2017
+
+skip_commits:
+  files:
+    - "**/*.md"
+    - "**/*.html"
+    # - "**/*.yml"
+    - "doc/*"
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - pwsh: Write-Host "Pass `#1 - Init ------------------------"
+  - git config --global core.autocrlf input
+
+# clone directory
+# clone_folder: c:\projects\myproject
+
+# fetch repository as zip archive
+shallow_clone: true                 # default is "false"
+
+# set clone depth
+clone_depth: 1                      # clone entire repository history if not defined
+
+# environment variables
+# environment:
+#   pwsh_build_version: $($appveyor_build_version.Major.ToString() + "." + $appveyor_build_version.Minor.ToString() + "." + $appveyor_build_version.Revision.ToString())
+
+# scripts that run after cloning repository
+install:
+  - pwsh: Write-Host "Pass `#2 - Install ---------------------"
+  - cmd: set
+  - pwsh: Get-ChildItem "env:"
+  # - pwsh: Get-Location
+  # - pwsh: choco install pester
+  # - pwsh: refreshenv
+  # - pwsh: $env:PSModulePath
+  # - pwsh: Install-Module -Name Pester -Confirm:$false -Force
+  # - pwsh: Install-Module -Name PesterMatchHashtable -Confirm:$false -Force
+  # - pwsh: if ($Env:Configuration -eq 'Debug')  { ./install-modules.ps1 -d -dev -api . }
+  # - pwsh: if ($Env:Configuration -eq 'Release') { ./install-modules.ps1 -api . }
+  - pwsh: $env:PSModulePath
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+platform:
+  # - x86
+  - amd64
+
+configuration:
+  - Debug
+  # - Release
+  
+# scripts to run before build
+before_build:
+  - pwsh: Write-Host "Pass `#3 - Before Build ----------------"
+  # - pwsh: Import-Module Pester
+  # - pwsh: Invoke-Pester
+
+# scripts to run *after* solution is built and *before* automatic packaging occurs (web apps, NuGet packages, Azure Cloud Services)
+before_package:
+  - pwsh: Write-Host "Pass `#4 - Before Package --------------"
+  # - cmd: tree
+  # - pwsh: ./scripts/os.ps1 -d -dev -api .
+
+# to run your custom scripts instead of automatic MSBuild
+build_script:
+  - pwsh: Write-Host "Pass `#5 - Build Script ----------------"
+  - pwsh: ./scripts/build-windows.ps1 -d -dev -api .
+
+# scripts to run after build
+after_build:
+  - pwsh: Write-Host "Pass `#6 - After Build -----------------"
+  # - cmd: makensis.exe /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 /DVERSION=%APPVEYOR_BUILD_VERSION% %APPVEYOR_BUILD_FOLDER%\build\windows\nsis\pwsh_fw.nsi
+  # - cmd: makecab.exe /F "%APPVEYOR_BUILD_FOLDER%\build\windows\cab\pwshfw.ddf" /D SourceDir=%APPVEYOR_BUILD_FOLDER% /D CabinetNameTemplate=pwshfw-%APPVEYOR_BUILD_VERSION%.cab /D DiskDirectoryTemplate=%APPVEYOR_BUILD_FOLDER%\releases\windows
+
+  # artifacts @see https://www.appveyor.com/docs/packaging-artifacts/
+artifacts:
+  - path: releases/pwshfw-%APPVEYOR_BUILD_VERSION%.exe
+    name: to-publish
+  - path: releases/pwshfw-%APPVEYOR_BUILD_VERSION%.cab
+    name: to-publish
+
+# see @url https://www.appveyor.com/docs/deployment/
+# and @url https://www.appveyor.com/docs/deployment/github/
+deploy:
+  - provider: GitHub
+    description: $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
+    auth_token:
+      # secure: m+LSSJicczPadkIy5LORLVxh1eyK8Onyn0OyEDKKmXAZVlLNd/baAPeryXS/PID+
+    artifact: to-publish
+    skip_tags: true
+    release: '%APPVEYOR_REPO_TAG_NAME%'
+    draft: false
+    prerelease: true
+    force_update: true
+    on:
+      appveyor_repo_tag: true        # deploy on tag push only
+      # tag: '%APPVEYOR_REPO_TAG_NAME%'
