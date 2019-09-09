@@ -9,7 +9,7 @@ The following files must exists in the project you want to build :
 -	CHANGELOG.md : your changelog file (see [keepachanglelog.com](https://keepachangelog.com/en/1.0.0/) for a start)
 -	LICENSE
 -	README.md
--	VERSION : just one line with the current version of your project. No new line.
+-	VERSION : just one line with the current version of your project with 3 digits. No new line. e.g. `1.2.3`
 
 ## Create build environment
 
@@ -59,9 +59,12 @@ DEFAULT_WINDOWS_INSTALL_DIR="C:\\Program Files"
 
 ### `build.conf.ps1`
 
-`build.conf.ps1` contains a list of files and folders that must be included in packages. The minimum is :
+`build.conf.ps1` contains a list of files and folders that must be included in packages. An example is :
 
 ```.ps1
 $Script:Folders = @("images", "includes", "Modules")
 $Script:Files = @("CHANGELOG.md", "README.md", "LICENSE", "VERSION", "app.ps1")
 ```
+
+> **NOTE**: You must at least include `CHANGELOG.md`, `LICENSE`, and `VERSION` files
+
