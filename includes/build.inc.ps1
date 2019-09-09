@@ -59,7 +59,7 @@ $buildEnv = Get-BuildEnvironment
 
 function Get-BuildEnvironment {
 	[CmdletBinding()]Param (
-		# [Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$string
+		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$ProjectPath
 	)
 	Begin {
 		eenter($MyInvocation.MyCommand)
@@ -67,7 +67,8 @@ function Get-BuildEnvironment {
 
 	Process {
 		$b = @{}
-		$b.root = (Resolve-Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "..")).Path
+		# $b.root = (Resolve-Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "..")).Path
+		$b.root = $ProjectPath
 		$b.GUID = New-Guid
 		$b.releases = $($b.root + [IO.Path]::DirectorySeparatorChar + "releases")
 		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION"))) { "1.0.0" | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION") }
@@ -130,6 +131,14 @@ function Approve-BuildEnvironment {
 		ebegin("Check project's root (" + $InputObject.root + ")")
 		eend ($rc1 -and $rc2)
 
+		# ROOT's BUILD CONF FILES
+		$rc11 = (fileExist "$($InputObject.root)/build/build.rc")
+		ebegin("Check project's build.rc conf file ($($InputObject.root)/build/build.rc)")
+		eend $rc11
+		$rc12 = (fileExist "$($InputObject.root)/build/build.conf.ps1")
+		ebegin("Check project's build.conf.ps1 conf file ($($InputObject.root)/build/build.conf.ps1)")
+		eend $rc11
+
 		# BUILD_DIR
 		$rc5 = $null -ne $InputObject.buildDir
 		# $rc6 = $rc5 -and (dirExist $InputObject.buildDir)
@@ -155,7 +164,7 @@ function Approve-BuildEnvironment {
 		ebegin("Check build number (" + $InputObject.number + ")")
 		eend ($rc8)
 
-		return ($rc1 -and $rc2 -and $rc3 -and $rc4 -and $rc5 -and $rc6 -and $rc7 -and $rc8 -and $rc9 -and $rc10)
+		return ($rc1 -and $rc2 -and $rc3 -and $rc4 -and $rc5 -and $rc6 -and $rc7 -and $rc8 -and $rc9 -and $rc10 -and $rc11 -and $rc12)
 	}
 
 	End {

@@ -18,6 +18,7 @@ Full path to control file
 $build | Out-DebianCONTROLFile -Destination /tmp/project.build
 
 .NOTES
+	2018.x.x -	honor PAckage, Version, Maintainer, Installed-Size and Description fields
 
 .LINK
 https://www.debian.org/doc/debian-policy/ch-controlfields.html

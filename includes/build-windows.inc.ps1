@@ -80,25 +80,47 @@ function Out-CabinetDefinitionFile {
 		# process folders
 		foreach ($f in $Script:Folders) {
 			# get a list of directories containing files
-			(Get-ChildItem $($build.root + [IO.Path]::DirectorySeparatorChar + $f) -Recurse -File).DirectoryName | Sort-Object -Unique | ForEach-Object {
+			(Get-ChildItem $($build.buildDir + [IO.Path]::DirectorySeparatorChar + $f) -Recurse -File).DirectoryName | Sort-Object -Unique | ForEach-Object {
 				# process files accordingly
-				$(".Set DestinationDir=" + $_.replace($build.root + [IO.Path]::DirectorySeparatorChar, "")) | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
+				$(".Set DestinationDir=" + $_.replace($build.buildDir + [IO.Path]::DirectorySeparatorChar, "")) | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
 				# $gci = Get-ChildItem $_ -File
 				# $gci2 = ($gci.fullname).replace($build.root + [IO.Path]::DirectorySeparatorChar, "")
 				# $gci2 | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
-				((Get-ChildItem $_ -File).fullname).replace($build.root + [IO.Path]::DirectorySeparatorChar, "") | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
+				((Get-ChildItem $_ -File).fullname).replace($build.buildDir + [IO.Path]::DirectorySeparatorChar, "") | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
 			}
 		}
 
 		# process files
 		".Set DestinationDir=" | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
 		foreach ($f in $Script:Files) {
-			((Get-ChildItem $($build.root + [IO.Path]::DirectorySeparatorChar + $f) -File).fullname).replace($build.root + [IO.Path]::DirectorySeparatorChar, "") | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
+			((Get-ChildItem $($build.buildDir + [IO.Path]::DirectorySeparatorChar + $f) -File).fullname).replace($build.buildDir + [IO.Path]::DirectorySeparatorChar, "") | Out-File -FilePath "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf" -Encoding utf8 -Append
 		}
 		return "$($Destination)/$($build.PRODUCT_SHORTNAME).ddf"
 	}
 
 	End {
 		eleave($MyInvocation.MyCommand)
+	}
+}
+
+function Approve-WindowsBuildEnvironment {
+	[CmdletBinding()]Param (
+		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)]$InputObject
+	)
+	Begin {
+		eenter($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+
+	Process {
+		# PROJECT's NSI config file
+		$rc11 = (fileExist "$($InputObject.root)/build/windows/$($build.PRODUCT_SHORTNAME).nsi")
+		ebegin("Check project's NSI conf file ($($InputObject.root)/build/windows/$($build.PRODUCT_SHORTNAME).nsi)")
+		eend $rc1
+
+		return ($rc1)
+	}
+
+	End {
+		eleave($Script:NS + '\' + $MyInvocation.MyCommand)
 	}
 }

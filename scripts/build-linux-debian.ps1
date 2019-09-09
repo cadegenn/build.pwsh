@@ -210,6 +210,10 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+#
+# COMMON CODE
+# TODO merge code somewhere
+#
 # load common resources
 $build=@{}
 $build.conf = $($ProjectPath + [IO.Path]::DirectorySeparatorChar + "build" + [IO.Path]::DirectorySeparatorChar + "build.conf.ps1")
@@ -229,7 +233,7 @@ if (fileExist $build.osInc) {
 
 # build and check build environment
 $build += Get-BuildRC -From $($build.rc)
-$build += Get-BuildEnvironment
+$build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
 	edevel($build | ConvertTo-Json)
@@ -238,6 +242,10 @@ if ($rc -eq $False) {
 
 if (dirExist "$($build.buildDir)") { $rc = eexec Remove-Item -Recurse "'$($build.buildDir)'" -Force -ErrorAction:SilentlyContinue }
 $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
+
+#
+# END COMMON CODE
+#
 
 etitle("Build " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
 $rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null

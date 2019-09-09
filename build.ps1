@@ -205,7 +205,7 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
-if (fileExist($([system.io.path]::GetTempPath() + "os.json"))) {
+if ((fileExist($([system.io.path]::GetTempPath() + "os.json"))) -and (-not $Force)) {
 	$os = Get-Content $([system.io.path]::GetTempPath() + "os.json") | Convertfrom-Json
 } else {
 	$os = Get-OperatingSystem -Online

@@ -58,7 +58,8 @@
 	[switch]$Force = $false,
 	[switch]$App = $true,
 	[switch]$Dmg = $true,
-	[switch]$Pkg = $true
+	[switch]$Pkg = $true,
+	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
 
@@ -211,27 +212,42 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+#
+# COMMON CODE
+# TODO merge code somewhere
+#
 # load common resources
-if (!(fileExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.conf.ps1"))) { efatal "build.conf.ps1 not found." }
-. $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.conf.ps1")
-if (!(fileExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1"))) { efatal "build.inc.ps1 not found." }
-. $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1")
-# include build-os.inc.ps1 if exists
+$build=@{}
+$build.conf = $($ProjectPath + [IO.Path]::DirectorySeparatorChar + "build" + [IO.Path]::DirectorySeparatorChar + "build.conf.ps1")
+$build.rc = $($ProjectPath + [IO.Path]::DirectorySeparatorChar + "build" + [IO.Path]::DirectorySeparatorChar + "build.rc")
+$build.inc  = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ".." + [IO.Path]::DirectorySeparatorChar + "includes" + [IO.Path]::DirectorySeparatorChar + "build.inc.ps1")
 $item = Get-Item $MyInvocation.MyCommand.Definition
-if (fileExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + $($item.BaseName) + ".inc.ps1")) {
-	. $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + $($item.BaseName) + ".inc.ps1")
+$build.osInc = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ".." + [IO.Path]::DirectorySeparatorChar + "includes" + [IO.Path]::DirectorySeparatorChar + $($item.BaseName) + ".inc.ps1")
+
+if (!(fileExist $($build.conf))) { efatal "build.conf.ps1 not found." }
+. $build.conf
+if (!(fileExist $build.inc)) { efatal "build.inc.ps1 not found." }
+. $build.inc
+# include build-os.inc.ps1 if exists
+if (fileExist $build.osInc) {
+	. $build.osInc
 }
 
 # build and check build environment
-$build = Get-BuildRC -From $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "build.rc")
-$build += Get-BuildEnvironment
+$build += Get-BuildRC -From $($build.rc)
+$build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
 	edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
+
 if (dirExist "$($build.buildDir)") { $rc = eexec Remove-Item -Recurse "'$($build.buildDir)'" -Force -ErrorAction:SilentlyContinue }
 $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
+
+#
+# END COMMON CODE
+#
 
 if ($Dmg) { $App = $true }
 
