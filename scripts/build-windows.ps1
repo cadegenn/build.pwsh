@@ -57,8 +57,8 @@
 	})][string]$configFile = "",
 	[switch]$Force = $false,
 	[Alias('Setup')]
-	[switch]$Exe = $true,
-	[switch]$Cab = $true,
+	[switch]$Exe,
+	[switch]$Cab,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
