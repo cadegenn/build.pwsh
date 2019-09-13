@@ -86,7 +86,7 @@ before_package:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - pwsh: Write-Host "Pass `#5 - Build Script ----------------"
-  - pwsh: ./scripts/build-windows.ps1 -d -dev -api .
+  - pwsh: ./scripts/build-windows.ps1 -d -dev -ProjectPath .
 
 # scripts to run after build
 after_build:
@@ -107,7 +107,7 @@ deploy:
   - provider: GitHub
     description: $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
     auth_token:
-      # secure: m+LSSJicczPadkIy5LORLVxh1eyK8Onyn0OyEDKKmXAZVlLNd/baAPeryXS/PID+
+      secure: m+LSSJicczPadkIy5LORLVxh1eyK8Onyn0OyEDKKmXAZVlLNd/baAPeryXS/PID+
     artifact: to-publish
     skip_tags: true
     release: '%APPVEYOR_REPO_TAG_NAME%'
