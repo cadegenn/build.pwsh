@@ -90,13 +90,13 @@ build_script:
 after_build:
   - pwsh: Write-Host "Pass `#6 - After Build -----------------"
   # - cmd: makensis.exe /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 /DVERSION=%APPVEYOR_BUILD_VERSION% %APPVEYOR_BUILD_FOLDER%\build\windows\nsis\pwsh_fw.nsi
-  # - cmd: makecab.exe /F "%APPVEYOR_BUILD_FOLDER%\build\windows\cab\pwshfw.ddf" /D SourceDir=%APPVEYOR_BUILD_FOLDER% /D CabinetNameTemplate=pwshfw-%APPVEYOR_BUILD_VERSION%.cab /D DiskDirectoryTemplate=%APPVEYOR_BUILD_FOLDER%\releases\windows
+  # - cmd: makecab.exe /F "%APPVEYOR_BUILD_FOLDER%\build\windows\cab\build.pwsh.ddf" /D SourceDir=%APPVEYOR_BUILD_FOLDER% /D CabinetNameTemplate=build.pwsh-%APPVEYOR_BUILD_VERSION%.cab /D DiskDirectoryTemplate=%APPVEYOR_BUILD_FOLDER%\releases\windows
 
   # artifacts @see https://www.appveyor.com/docs/packaging-artifacts/
 artifacts:
-  - path: releases/pwshfw-%APPVEYOR_BUILD_VERSION%.exe
+  - path: releases/build.pwsh-%APPVEYOR_BUILD_VERSION%.exe
     name: to-publish
-  - path: releases/pwshfw-%APPVEYOR_BUILD_VERSION%.cab
+  - path: releases/build.pwsh-%APPVEYOR_BUILD_VERSION%.cab
     name: to-publish
 
 # see @url https://www.appveyor.com/docs/deployment/
