@@ -60,6 +60,7 @@ install:
   - cmd: pwshfw-2.1.3.348.exe /S
   - cmd: dir "c:\Program Files\"
   - cmd: dir "c:\Program Files\Tiny {PowerShell} Framework"
+  - ps: $PSVersionTable
 
 #---------------------------------#
 #       build configuration       #
