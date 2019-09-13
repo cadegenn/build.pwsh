@@ -2,3 +2,4 @@
 releases/*
 *.bak
 *.log
+*.old
