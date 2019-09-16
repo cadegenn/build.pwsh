@@ -74,10 +74,10 @@ function Get-BuildEnvironment {
 		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION"))) { "1.0.0" | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION") }
 		[string]$b.version = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION")
 
-		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD"))) { 0 | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD") }
-		[uint16]$b.number = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER"))) { 0 | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER") }
+		[uint16]$b.number = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		$b.number++
-		$rc = $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		$rc = $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		# APPVEYOR: honor appveyor build number
 		if ($null -ne $env:APPVEYOR_BUILD_NUMBER) { $b.number = $env:APPVEYOR_BUILD_NUMBER}
 		# TRAVIS: honor travis-ci build number
@@ -85,9 +85,9 @@ function Get-BuildEnvironment {
 		# GITLAB: honor gitlab-ci pipeline project's build number
 		if ($null -ne $env:CI_PIPELINE_IID) { $b.number = $env:CI_PIPELINE_IID}
 
-		# $b.number | Set-Content $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		# $b.number | Set-Content $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		# it seems $b.root is readonly
-		# $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		# $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 
 		return $b
 	}
@@ -131,7 +131,7 @@ function Approve-BuildEnvironment {
 		ebegin("Check project's root (" + $InputObject.root + ")")
 		eend ($rc1 -and $rc2)
 
-		# ROOT's BUILD CONF FILES
+		# ROOT's BUILD_NUMBER CONF FILES
 		$rc11 = (fileExist "$($InputObject.root)/build/build.rc")
 		ebegin("Check project's build.rc conf file ($($InputObject.root)/build/build.rc)")
 		eend $rc11
@@ -204,7 +204,7 @@ function New-BuildDirectory {
 		}
 		# populate build directory
 		if ($null -ne $build) {
-			$build.number | Set-Content "$Destination/BUILD"
+			$build.number | Set-Content "$Destination/BUILD_NUMBER"
 			# copy files
 			ebegin "Copy folders"
 			# Copy-Item -Include $folders -Path "$ROOT/*" -Destination "$BUILD_DIR/" -Recurse
