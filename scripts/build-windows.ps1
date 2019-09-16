@@ -239,7 +239,7 @@ $build += Get-BuildRC -From $($build.rc)
 $build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	edevel($build | ConvertTo-Json)
+	# edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
 
@@ -252,7 +252,7 @@ $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
 
 $rc = Approve-WindowsBuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	edevel($build | ConvertTo-Json)
+	# edevel($build | ConvertTo-Json)
 	efatal("Windows environment is not functional.")
 }
 
@@ -277,7 +277,7 @@ if ($Exe) {
 	if (!$MAKENSIS) {
 		eerror("makensis.exe not found")
 	} else {
-		edevel("MAKENSIS = " + $MAKENSIS)
+		# edevel("MAKENSIS = " + $MAKENSIS)
 		$rc = eexec -exe "$MAKENSIS" "/V$debugLevel /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 '$($build.NSIheader)' '$($build.NSIscript)'"
 		eend $rc
 	}
