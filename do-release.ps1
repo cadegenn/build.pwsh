@@ -375,6 +375,12 @@ if ($rc -eq $false) { efatal("Unable to finish release.") }
 # @see @url https://stackoverflow.com/questions/3745135/push-git-commits-tags-simultaneously
 $rc = eexec git push --follow-tags
 if ($rc -eq $false) { efatal("Unable to push tags.") }
+# push master branch
+eexec git checkout master
+$rc = eexec git push
+if ($rc -eq $false) { efatal("Unable to push master branch.") }
+# switch bask to branch develop
+eexec git checkout develop
 
 # uncomment every edebug(), edevel(), eenter() and eeleave() calls in every single file
 ForEach ($f in (Get-ChildItem -Path Global:DIRNAME -Recurse -Include "*.ps1")) {
@@ -385,7 +391,6 @@ ForEach ($f in (Get-ChildItem -Path Global:DIRNAME -Recurse -Include "*.ps1")) {
 }
 $rc = eexec git commit -am "'get back debugging messages'"
 if ($rc -eq $false) { efatal("Unable to commit changes.") }
-# # switch bask to branch develop
 
 #############################
 ## YOUR SCRIPT ENDS   HERE ##
