@@ -225,9 +225,9 @@ $build.inc  = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ".." + [IO
 $item = Get-Item $MyInvocation.MyCommand.Definition
 $build.osInc = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ".." + [IO.Path]::DirectorySeparatorChar + "includes" + [IO.Path]::DirectorySeparatorChar + $($item.BaseName) + ".inc.ps1")
 
-if (!(fileExist $($build.conf))) { efatal "build.conf.ps1 not found." }
+if (!(fileExist $build.conf)) { efatal "$($build.conf) not found." }
 . $build.conf
-if (!(fileExist $build.inc)) { efatal "build.inc.ps1 not found." }
+if (!(fileExist $build.inc)) { efatal "$($build.inc) not found." }
 . $build.inc
 # include build-os.inc.ps1 if exists
 if (fileExist $build.osInc) {
