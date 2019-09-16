@@ -33,10 +33,10 @@ init:
 # clone_folder: c:\projects\myproject
 
 # fetch repository as zip archive
-shallow_clone: false                 # default is "false"
+# shallow_clone: true                 # default is "false"
 
 # set clone depth
-clone_depth: 1                      # clone entire repository history if not defined
+# clone_depth: 1                      # clone entire repository history if not defined
 
 # environment variables
 # environment:
