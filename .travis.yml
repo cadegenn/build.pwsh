@@ -1,5 +1,8 @@
 language: minimal
 
+env:
+  - PWSHFW_VERSION=2.1.3.257
+
 matrix:
   include:
     # - os: linux
@@ -29,9 +32,9 @@ matrix:
       before_install:
         - pwd
         - echo "Pass 01 before_install [linux/bionic]"
-        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-2.1.3.257-all.deb
+        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-$PWSHFW_VERSION-all.deb
         - ls -aldFh
-        - sudo dpkg -i ./pwshfw-2.1.3.257-all.deb
+        - sudo dpkg -i ./pwshfw-$PWSHFW_VERSION-all.deb
     - os: osx
       osx_image: xcode10
       before_install:
@@ -39,8 +42,8 @@ matrix:
         - brew tap caskroom/cask
         - brew cask install powershell
         # - brew install wget # already installed
-        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/Tiny.PowerShell.Framework-2.1.3.257.pkg
-        - sudo installer -pkg Tiny.PowerShell.Framework-${VERSION}.${BUILD}.pkg -target /
+        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/Tiny.PowerShell.Framework-$PWSHFW_VERSION.pkg
+        - sudo installer -pkg Tiny.PowerShell.Framework-$PWSHFW_VERSION.pkg -target /
   fast_finish: true
 
 before_install:
