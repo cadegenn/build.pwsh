@@ -56,9 +56,9 @@
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
 	[switch]$Force = $false,
-	[switch]$App = $true,
-	[switch]$Dmg = $true,
-	[switch]$Pkg = $true,
+	[switch]$App,
+	[switch]$Dmg,
+	[switch]$Pkg,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 

@@ -58,7 +58,7 @@ $buildEnv = Get-BuildEnvironment
 #>
 
 function Get-BuildEnvironment {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([hashtable])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$ProjectPath
 	)
 	Begin {
@@ -74,10 +74,10 @@ function Get-BuildEnvironment {
 		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION"))) { "1.0.0" | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION") }
 		[string]$b.version = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "VERSION")
 
-		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD"))) { 0 | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD") }
-		[uint16]$b.number = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		if (!(fileExist $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER"))) { 0 | Set-Content -Path $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER") }
+		[uint16]$b.number = Get-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		$b.number++
-		$rc = $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		$rc = $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		# APPVEYOR: honor appveyor build number
 		if ($null -ne $env:APPVEYOR_BUILD_NUMBER) { $b.number = $env:APPVEYOR_BUILD_NUMBER}
 		# TRAVIS: honor travis-ci build number
@@ -85,9 +85,9 @@ function Get-BuildEnvironment {
 		# GITLAB: honor gitlab-ci pipeline project's build number
 		if ($null -ne $env:CI_PIPELINE_IID) { $b.number = $env:CI_PIPELINE_IID}
 
-		# $b.number | Set-Content $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		# $b.number | Set-Content $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 		# it seems $b.root is readonly
-		# $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD")
+		# $b.number | Set-Content $($b.root + [IO.Path]::DirectorySeparatorChar + "BUILD_NUMBER")
 
 		return $b
 	}
@@ -131,7 +131,7 @@ function Approve-BuildEnvironment {
 		ebegin("Check project's root (" + $InputObject.root + ")")
 		eend ($rc1 -and $rc2)
 
-		# ROOT's BUILD CONF FILES
+		# ROOT's BUILD_NUMBER CONF FILES
 		$rc11 = (fileExist "$($InputObject.root)/build/build.rc")
 		ebegin("Check project's build.rc conf file ($($InputObject.root)/build/build.rc)")
 		eend $rc11
@@ -180,7 +180,9 @@ function Approve-BuildEnvironment {
 
 
 function New-BuildDirectory {
-	[CmdletBinding()]Param (
+	[CmdletBinding(SupportsShouldProcess, ConfirmImpact='Low')]
+	[OutputType([String], [boolean])]
+	Param (
 		[Alias('Template')]
 		[Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$TemplateDirectory = $null,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)]
@@ -194,37 +196,42 @@ function New-BuildDirectory {
 	}
 
 	Process {
-		# copy template directory
-		if (!([string]::IsNullOrEmpty($TemplateDirectory))) {
-			if (dirExist($TemplateDirectory)) {
-				ebegin "Copy Template folder"
-				$rc = eexec Copy-Item $TemplateDirectory/* -Destination $Destination -Recurse -Container -Force
-				eend $rc
-			}
-		}
-		# populate build directory
-		if ($null -ne $build) {
-			$build.number | Set-Content "$Destination/BUILD"
-			# copy files
-			ebegin "Copy folders"
-			# Copy-Item -Include $folders -Path "$ROOT/*" -Destination "$BUILD_DIR/" -Recurse
-			foreach ($f in $Script:folders) {
-				$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Recurse -Container -Force
-				# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
-			}
-			eend $?
-			ebegin "Copy files"
-			# Copy-Item -Include $files -Path "$ROOT/*.ps1" -Destination "$BUILD_DIR/"
-			foreach ($f in $Script:files) {
-				$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Force
-				# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
-			}
-			eend $?
-		}
+		if ($PSCmdlet.ShouldProcess("ShouldProcess?")) {
 
-		if (dirExist($Destination)) {
-			return $Destination
-		}  else {
+			# copy template directory
+			if (!([string]::IsNullOrEmpty($TemplateDirectory))) {
+				if (dirExist($TemplateDirectory)) {
+					ebegin "Copy Template folder"
+					$rc = eexec Copy-Item $TemplateDirectory/* -Destination $Destination -Recurse -Container -Force
+					eend $rc
+				}
+			}
+			# populate build directory
+			if ($null -ne $build) {
+				$build.number | Set-Content "$Destination/BUILD_NUMBER"
+				# copy files
+				ebegin "Copy folders"
+				# Copy-Item -Include $folders -Path "$ROOT/*" -Destination "$BUILD_DIR/" -Recurse
+				foreach ($f in $Script:folders) {
+					$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Recurse -Container -Force
+					# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
+				}
+				eend $?
+				ebegin "Copy files"
+				# Copy-Item -Include $files -Path "$ROOT/*.ps1" -Destination "$BUILD_DIR/"
+				foreach ($f in $Script:files) {
+					$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Force
+					# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
+				}
+				eend $?
+			}
+
+			if (dirExist($Destination)) {
+				return $Destination
+			}  else {
+				return $false
+			}
+		} else {
 			return $false
 		}
 	}

@@ -1,3 +1,16 @@
+<img align="left" width="64" height="64" src="../images/windows.png">
+
+# Build a Windows setup
+
+Create `build/windows` directory at the root of the project
+
+## Target setup.exe
+
+Create a `${PRODUCT_SHORTNAME}.nsi` file into `build/windows` directory.
+
+A template is provided with `build.pwsh` :
+
+```nsis
 #Build Switches
 # /DVERSION=[Version]
 
@@ -23,7 +36,6 @@
 #
 # defines
 #
-; !include .\header.nsi
 
 #
 # General Attributes
@@ -43,7 +55,6 @@ VIAddVersionKey "LegalCopyright" "${PRODUCT_COPYRIGHT}"
 VIAddVersionKey "FileDescription" "Installer"
 VIAddVersionKey "FileVersion" "${VERSION}.${NUMBER}"
 VIProductVersion "${VERSION}.${NUMBER}"
-;VIProductVersion "1.0.0.0"
 
 #
 # Pages
@@ -138,3 +149,12 @@ Section "Uninstall"
 	RMDIR /r "$INSTDIR"
 	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
 SectionEnd
+```
+
+To build the setup.exe, call `build-windows.ps1` with `-exe` parameter.
+
+## Target a cab archive file
+
+There is nothing more to do. `build.pwsh` will automatically build a cabinet archive file with content listed in `build.conf.ps1`. It will preserve file hierarchy.
+
+To build the cabinet archive file, call `build-windows.ps1` with `-cab` parameter.

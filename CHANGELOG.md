@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 -   correctly build debian package
 -   correctly build windows setup.exe
 -   correctly build windows cabinet archive file
+-	AppVeyor CI/CD build windows setup.exe and archive.cab
 
 ### Changed
 

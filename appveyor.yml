@@ -33,7 +33,7 @@ init:
 # clone_folder: c:\projects\myproject
 
 # fetch repository as zip archive
-shallow_clone: true                 # default is "false"
+shallow_clone: false                 # default is "false"
 
 # set clone depth
 clone_depth: 1                      # clone entire repository history if not defined
@@ -56,6 +56,11 @@ install:
   # - pwsh: if ($Env:Configuration -eq 'Debug')  { ./install-modules.ps1 -d -dev -api . }
   # - pwsh: if ($Env:Configuration -eq 'Release') { ./install-modules.ps1 -api . }
   - pwsh: $env:PSModulePath
+  - ps: Start-FileDownload 'https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-2.1.3.348.exe'
+  - cmd: pwshfw-2.1.3.348.exe /S
+  # - cmd: dir "c:\Program Files\"
+  # - cmd: dir "c:\Program Files\Tiny {PowerShell} Framework"
+  # - ps: $PSVersionTable
 
 #---------------------------------#
 #       build configuration       #
@@ -84,7 +89,8 @@ before_package:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - pwsh: Write-Host "Pass `#5 - Build Script ----------------"
-  - pwsh: ./scripts/build-windows.ps1 -d -dev -api .
+  - cmd: dir %APPVEYOR_BUILD_FOLDER%
+  - pwsh: ./scripts/build-windows.ps1 -d -dev -ProjectPath "$env:APPVEYOR_BUILD_FOLDER" -api 'C:\Program Files\Tiny {PowerShell} Framework' -Exe -Cab
 
 # scripts to run after build
 after_build:
@@ -105,7 +111,7 @@ deploy:
   - provider: GitHub
     description: $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
     auth_token:
-      # secure: m+LSSJicczPadkIy5LORLVxh1eyK8Onyn0OyEDKKmXAZVlLNd/baAPeryXS/PID+
+      secure: m+LSSJicczPadkIy5LORLVxh1eyK8Onyn0OyEDKKmXAZVlLNd/baAPeryXS/PID+
     artifact: to-publish
     skip_tags: true
     release: '%APPVEYOR_REPO_TAG_NAME%'
