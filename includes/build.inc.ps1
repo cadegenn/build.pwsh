@@ -180,7 +180,9 @@ function Approve-BuildEnvironment {
 
 
 function New-BuildDirectory {
-	[CmdletBinding()][OutputType([String], [boolean])]Param (
+	[CmdletBinding(SupportsShouldProcess, ConfirmImpact='Low')]
+	[OutputType([String], [boolean])]
+	Param (
 		[Alias('Template')]
 		[Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$TemplateDirectory = $null,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)]
@@ -194,37 +196,42 @@ function New-BuildDirectory {
 	}
 
 	Process {
-		# copy template directory
-		if (!([string]::IsNullOrEmpty($TemplateDirectory))) {
-			if (dirExist($TemplateDirectory)) {
-				ebegin "Copy Template folder"
-				$rc = eexec Copy-Item $TemplateDirectory/* -Destination $Destination -Recurse -Container -Force
-				eend $rc
-			}
-		}
-		# populate build directory
-		if ($null -ne $build) {
-			$build.number | Set-Content "$Destination/BUILD_NUMBER"
-			# copy files
-			ebegin "Copy folders"
-			# Copy-Item -Include $folders -Path "$ROOT/*" -Destination "$BUILD_DIR/" -Recurse
-			foreach ($f in $Script:folders) {
-				$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Recurse -Container -Force
-				# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
-			}
-			eend $?
-			ebegin "Copy files"
-			# Copy-Item -Include $files -Path "$ROOT/*.ps1" -Destination "$BUILD_DIR/"
-			foreach ($f in $Script:files) {
-				$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Force
-				# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
-			}
-			eend $?
-		}
+		if ($PSCmdlet.ShouldProcess("ShouldProcess?")) {
 
-		if (dirExist($Destination)) {
-			return $Destination
-		}  else {
+			# copy template directory
+			if (!([string]::IsNullOrEmpty($TemplateDirectory))) {
+				if (dirExist($TemplateDirectory)) {
+					ebegin "Copy Template folder"
+					$rc = eexec Copy-Item $TemplateDirectory/* -Destination $Destination -Recurse -Container -Force
+					eend $rc
+				}
+			}
+			# populate build directory
+			if ($null -ne $build) {
+				$build.number | Set-Content "$Destination/BUILD_NUMBER"
+				# copy files
+				ebegin "Copy folders"
+				# Copy-Item -Include $folders -Path "$ROOT/*" -Destination "$BUILD_DIR/" -Recurse
+				foreach ($f in $Script:folders) {
+					$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Recurse -Container -Force
+					# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
+				}
+				eend $?
+				ebegin "Copy files"
+				# Copy-Item -Include $files -Path "$ROOT/*.ps1" -Destination "$BUILD_DIR/"
+				foreach ($f in $Script:files) {
+					$rc = eexec Copy-Item $($build.root + "/" + $f) -Destination $($Destination) -Force
+					# $rc = eexec rsync "$RSYNC_OPTIONS '$($build.root + "/" + $f)' '$($Destination + "/")'"
+				}
+				eend $?
+			}
+
+			if (dirExist($Destination)) {
+				return $Destination
+			}  else {
+				return $false
+			}
+		} else {
 			return $false
 		}
 	}
