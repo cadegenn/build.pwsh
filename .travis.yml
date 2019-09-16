@@ -28,7 +28,7 @@ matrix:
           update: true
       before_install:
         - echo "Pass 01 before_install [linux/xenial]"
-        - wget https://github.com/cadegenn/pwsh_fw/releases/download/latest/pwshfw-2.1.3.257-all.deb
+        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-2.1.3.257-all.deb
         - dpkg -i pwshfw-2.1.3.257-all.deb
     - os: osx
       osx_image: xcode10
@@ -37,7 +37,7 @@ matrix:
         - brew tap caskroom/cask
         - brew cask install powershell
         - brew install wget
-        - wget https://github.com/cadegenn/pwsh_fw/releases/download/latest/Tiny.PowerShell.Framework-2.1.3.257.pkg
+        - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/Tiny.PowerShell.Framework-2.1.3.257.pkg
         - sudo installer -pkg Tiny.PowerShell.Framework-${VERSION}.${BUILD}.pkg -target /
   fast_finish: true
 
