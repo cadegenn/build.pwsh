@@ -257,6 +257,8 @@ $Global:DEVEL = $true
 	# parse CHANGELOG.md
 	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)\\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
 	if ($null -eq $TAG ) { efatal("TAG is empty.") }
+	# add current date to CHANGELOG
+	(Get-Content $CHANGELOG) -replace "^## \\\[$($TAG)\\\].*", "## \[$($TAG)\] - $(Get-Date -UFormat "%Y.%m.%d")" | Out-File $CHANGELOG
 	# edevel("TAG = " + $TAG)
 
 	# write new version to appveyor.yml
