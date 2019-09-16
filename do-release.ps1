@@ -361,10 +361,13 @@ ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.ps1")) 
 	(Get-Content $f.FullName) -replace "^(\s+)eleave", '$1# eleave' | Set-Content -Encoding UTF8 $f.FullName
 }
 # commit everything
-$rc = eexec git commit -am "'removed debugging messages'"
-if ($rc -eq $false) { efatal("Unable to commit changes.") }
-$rc = eexec git push --set-upstream origin release/v${TAG}
-if ($rc -eq $false) { efatal("Unable to push upstream.") }
+$rc = eexec -exe git -args "diff --exit-code" -AsInt
+if ($rc -ne 0) {
+	$rc = eexec git commit -am "'removed debugging messages'"
+	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+	$rc = eexec git push --set-upstream origin release/v${TAG}
+	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+}
 
 # push (it will generate a draft release by appveyor/travis)
 # $rc = eexec git tag "v$CURRENT_RELEASE_TAG"
@@ -389,8 +392,13 @@ ForEach ($f in (Get-ChildItem -Path Global:DIRNAME -Recurse -Include "*.ps1")) {
 	(Get-Content $f.FullName) -replace "^(\s+)# eenter", '$1eenter' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# eleave", '$1eleave' | Set-Content -Encoding UTF8 $f.FullName
 }
-$rc = eexec git commit -am "'get back debugging messages'"
-if ($rc -eq $false) { efatal("Unable to commit changes.") }
+$rc = eexec -exe git -args "diff --exit-code" -AsInt
+if ($rc -ne 0) {
+	$rc = eexec git commit -am "'get back debugging messages'"
+	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+	$rc = eexec git push
+	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+}
 
 #############################
 ## YOUR SCRIPT ENDS   HERE ##
