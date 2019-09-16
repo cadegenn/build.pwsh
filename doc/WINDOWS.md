@@ -1,3 +1,5 @@
+<img align="left" width="64" height="64" src="../images/windows.png">
+
 # Build a Windows setup
 
 Create `build/windows` directory at the root of the project
