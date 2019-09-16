@@ -255,7 +255,7 @@ $Global:DEVEL = $true
 
 	# compute release number
 	# parse CHANGELOG.md
-	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
+	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)\\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
 	if ($null -eq $TAG ) { efatal("TAG is empty.") }
 	# edevel("TAG = " + $TAG)
 
