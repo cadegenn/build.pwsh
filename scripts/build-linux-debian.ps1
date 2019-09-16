@@ -236,7 +236,7 @@ $build += Get-BuildRC -From $($build.rc)
 $build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	edevel($build | ConvertTo-Json)
+	# edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
 

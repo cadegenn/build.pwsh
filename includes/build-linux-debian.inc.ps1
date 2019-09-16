@@ -32,7 +32,7 @@ function Out-DebCONTROLFile {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
 	Begin {
-		eenter($MyInvocation.MyCommand)
+		# eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { $rc = New-Item $($Destination) -Force -ItemType Directory}
 	}
 
@@ -54,6 +54,6 @@ Description: $($build.PRODUCT_DESCRIPTION)
 	}
 
 	End {
-		eleave($MyInvocation.MyCommand)
+		# eleave($MyInvocation.MyCommand)
 	}
 }
