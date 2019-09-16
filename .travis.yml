@@ -53,7 +53,7 @@ script:
   - echo "Pass 04 script"
   # - pwsh -f "${env:TRAVIS_BUILD_DIR}/test.ps1"
   # - ${TRAVIS_BUILD_DIR}/build/debian/build-travis.sh
-  - pwsh -c ./build.ps1 -d -dev -api .
+  - pwsh -c ./build.ps1 -d -dev -api 
 
 before_cache:
   - echo "Pass 05 before_cache"
