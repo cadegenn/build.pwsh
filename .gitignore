@@ -3,3 +3,4 @@ releases/*
 *.bak
 *.log
 *.old
+BUILD
