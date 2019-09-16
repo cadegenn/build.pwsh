@@ -14,6 +14,8 @@ destination folder
 .OUTPUTS
 Full path to control file
 
+
+
 .EXAMPLE
 $build | Out-DebianCONTROLFile -Destination /tmp/project.build
 
@@ -25,7 +27,7 @@ https://www.debian.org/doc/debian-policy/ch-controlfields.html
 
 #>
 function Out-DebCONTROLFile {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][hashtable]$build,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)

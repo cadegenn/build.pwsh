@@ -58,7 +58,7 @@ $buildEnv = Get-BuildEnvironment
 #>
 
 function Get-BuildEnvironment {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([hashtable])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$ProjectPath
 	)
 	Begin {
@@ -180,7 +180,7 @@ function Approve-BuildEnvironment {
 
 
 function New-BuildDirectory {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String], [boolean])]Param (
 		[Alias('Template')]
 		[Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$TemplateDirectory = $null,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)]

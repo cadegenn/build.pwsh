@@ -27,7 +27,7 @@ function Out-NullSoftInstallerScriptHeaderFile {
 Set-Alias -Name Out-NSISHeader -Value Out-NullSoftInstallerScriptHeaderFile
 
 function New-NullSoftInstallerScriptListFile {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$SourceDirectory,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][hashtable]$build,
 		[Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$Filename
@@ -47,7 +47,7 @@ Set-Alias -Name Out-NSISFiles -Value New-NullSoftInstallerScriptListFile
 
 
 function Out-CabinetDefinitionFile {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String])]Param (
 		# [Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$SourceDirectory,
 		# [Parameter(Mandatory = $true,ValueFromPipeLine = $false)][hashtable]$build,
 		# [Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$Filename

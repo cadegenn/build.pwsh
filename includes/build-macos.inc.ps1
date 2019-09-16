@@ -19,7 +19,7 @@ $build | Out-InfoPlist -Destination /tmp/project.build/Contents
 #>
 
 function Out-InfoPlist {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][hashtable]$build,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
