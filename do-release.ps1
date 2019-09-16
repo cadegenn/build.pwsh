@@ -375,7 +375,7 @@ $rc = eexec git push --follow-tags
 if ($rc -eq $false) { efatal("Unable to push tags.") }
 
 # uncomment every edebug(), edevel(), eenter() and eeleave() calls in every single file
-ForEach ($f in (Get-ChildItem -Path "../" -Recurse -Include "*.psm1")) {
+ForEach ($f in (Get-ChildItem -Path Global:DIRNAME -Recurse -Include "*.ps1")) {
 	(Get-Content $f.FullName) -replace "^(\s+)# edebug", '$1edebug' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# edevel", '$1edevel' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# eenter", '$1eenter' | Set-Content -Encoding UTF8 $f.FullName
