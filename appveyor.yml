@@ -89,6 +89,7 @@ before_package:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - pwsh: Write-Host "Pass `#5 - Build Script ----------------"
+  - cmd: dir %APPVEYOR_BUILD_FOLDER%
   - pwsh: ./scripts/build-windows.ps1 -d -dev -ProjectPath "$env:APPVEYOR_BUILD_FOLDER" -api 'C:\Program Files\Tiny {PowerShell} Framework'
 
 # scripts to run after build
