@@ -1,0 +1,100 @@
+language: minimal
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/14.04/prod trusty main"
+              key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+          packages:
+            - fakeroot
+            - powershell
+          update: true
+    - os: linux
+      dist: xenial
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main"
+              key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+          packages:
+            - fakeroot
+            - powershell
+          update: true
+    - os: osx
+      osx_image: xcode10
+      before_install:
+        - brew tap caskroom/cask
+        - brew cask install powershell
+  fast_finish: true
+
+before_install:
+  # WARNING pass "before_install" is not run on macOS
+  - echo "Pass 01 before_install"
+
+install:
+  - echo "Pass 02 install"
+  # - sudo pwsh -c 'Install-Module Pester -Force'
+  # - sudo pwsh -c 'Install-Module -Name PesterMatchHashtable -Confirm:$false -Force'
+  # - sudo pwsh -c  "& ./install-modules.ps1 -d -dev -api ."
+
+before_script:
+  - echo "Pass 03 before_script"
+  # - pwsh -f "${env:TRAVIS_BUILD_DIR}/build.ps1"
+  # - pwsh -c ./scripts/os.ps1 -d -dev -api .
+  # - pwsh -c "Invoke-Pester -Script ./tests/*"
+
+script:
+  - echo "Pass 04 script"
+  # - pwsh -f "${env:TRAVIS_BUILD_DIR}/test.ps1"
+  # - ${TRAVIS_BUILD_DIR}/build/debian/build-travis.sh
+  - pwsh -c ./build.ps1 -d -dev -api 
+
+before_cache:
+  - echo "Pass 05 before_cache"
+
+after_success:
+  - echo "Pass 06 after_success"
+  # - pwsh -f "${env:TRAVIS_BUILD_DIR}/deploy.ps1"
+
+after_falure:
+  - echo "Pass 06 after_failure"
+  # - pwsh -f "${env:TRAVIS_BUILD_DIR}/deploy.ps1"
+
+before_deploy:
+  - echo "Pass 07 before_deploy"
+
+deploy:
+  api_key:
+    secure: MVE1KIXPbSaVHq4X9e9ToTLUgHikrveWEmM9xn5sEhMEhMNHbM1pjaIOMkjAUVCRWmikKHZvOD+Y3Plh+8eYspw/QbiJogDILzCUtfy6ujuWau9pNUrudj9/7BtitQyN45ZEy2BXFNh8qqluGB0JLNKPV11EUf94OBVsDvTMtVUk0p6Hqlaz0A7zTqUsoHUHkIplS5Wz8J7PDOrpPbiVqOTFNI1p8zzw0PdfAemNDjvnlRh4vLYTsAIhXzZuAo5olGsFgkX9K6OKdxzd9XZIGfGb8tpbgvATkSAqnJoEzeJQlSpTdwFMvabtep/ezNed7RFK8OiRg0nZPnyYnyQLsSYF6Lj87z8usLg9PTx7jZ6yfhxVr7Jkt2QIX7v8sapHNkfPMUzfuypLI8MVHgH9svFBSC0VSfZZe6G284FJHRO1N7ydGR80Whb2KbOM7Nj2+iBSLf+gRDh5r0E8tGfmO0tXCi1BhgOk18C/WzqLJ7vmfIj+r2vQ3JD3xwCte5d61DlE6Y7l+XoyU6KRVZ/e/4b019p1m7bQGSWozT7T/quhXtGTNkog+FduIHKi0P6fBRAaUQB6D943EhGupKS9Odv8KwqApYnrCFuRIA125UxWaO5uHXVZSdwks9cB+YKyAtundHM2RSGOYQWJDK8lkbRCov59MbGauKy/TaZuidE=
+  # file: "${TRAVIS_BUILD_DIR}/releases/debian/pwshfw-${TRAVIS_BUILD_VERSION}-all.deb"
+  target_commitish: $TRAVIS_COMMIT # <--------both used
+  tag_name: $TRAVIS_TAG # <--------both used
+  file_glob: true
+  file: releases/*
+  overwrite: true
+  skip_cleanup: true
+  provider: releases
+  draft: true
+  prerelease: true
+  on:
+    branch: develop
+    tags: true
+  # - provider: releases
+  #   draft: false
+  #   prerelease: false
+  #   on:
+  #     branch: master
+  #     tags: true
+
+after_deploy:
+  - echo "Pass 09 after_deploy"
+
+after_script:
+  - echo "Pass 10 after_script"
+
