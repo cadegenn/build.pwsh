@@ -255,8 +255,10 @@ $Global:DEVEL = $true
 
 	# compute release number
 	# parse CHANGELOG.md
-	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)\\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
+	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
 	if ($null -eq $TAG ) { efatal("TAG is empty.") }
+	# add current date to CHANGELOG
+	(Get-Content $CHANGELOG) -replace "^## \\\[$($TAG)\\\].*", "## \[$($TAG)\] - $(Get-Date -UFormat "%Y.%m.%d")" | Out-File $CHANGELOG
 	# edevel("TAG = " + $TAG)
 
 	# write new version to appveyor.yml
@@ -359,10 +361,13 @@ ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.ps1")) 
 	(Get-Content $f.FullName) -replace "^(\s+)eleave", '$1# eleave' | Set-Content -Encoding UTF8 $f.FullName
 }
 # commit everything
-$rc = eexec git commit -am "'removed debugging messages'"
-if ($rc -eq $false) { efatal("Unable to commit changes.") }
-$rc = eexec git push --set-upstream origin release/v${TAG}
-if ($rc -eq $false) { efatal("Unable to push upstream.") }
+$rc = eexec -exe git -args "diff --exit-code" -AsInt
+if ($rc -ne 0) {
+	$rc = eexec git commit -am "'removed debugging messages'"
+	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+	$rc = eexec git push --set-upstream origin release/v${TAG}
+	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+}
 
 # push (it will generate a draft release by appveyor/travis)
 # $rc = eexec git tag "v$CURRENT_RELEASE_TAG"
@@ -373,17 +378,27 @@ if ($rc -eq $false) { efatal("Unable to finish release.") }
 # @see @url https://stackoverflow.com/questions/3745135/push-git-commits-tags-simultaneously
 $rc = eexec git push --follow-tags
 if ($rc -eq $false) { efatal("Unable to push tags.") }
+# push master branch
+eexec git checkout master
+$rc = eexec git push
+if ($rc -eq $false) { efatal("Unable to push master branch.") }
+# switch bask to branch develop
+eexec git checkout develop
 
 # uncomment every edebug(), edevel(), eenter() and eeleave() calls in every single file
-ForEach ($f in (Get-ChildItem -Path "../" -Recurse -Include "*.psm1")) {
+ForEach ($f in (Get-ChildItem -Path Global:DIRNAME -Recurse -Include "*.ps1")) {
 	(Get-Content $f.FullName) -replace "^(\s+)# edebug", '$1edebug' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# edevel", '$1edevel' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# eenter", '$1eenter' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)# eleave", '$1eleave' | Set-Content -Encoding UTF8 $f.FullName
 }
-$rc = eexec git commit -am "'get back debugging messages'"
-if ($rc -eq $false) { efatal("Unable to commit changes.") }
-# # switch bask to branch develop
+$rc = eexec -exe git -args "diff --exit-code" -AsInt
+if ($rc -ne 0) {
+	$rc = eexec git commit -am "'get back debugging messages'"
+	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+	$rc = eexec git push
+	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+}
 
 #############################
 ## YOUR SCRIPT ENDS   HERE ##

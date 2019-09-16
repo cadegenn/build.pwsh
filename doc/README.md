@@ -4,25 +4,25 @@
 
 ## Install build.pwsh
 
--	Download latest release of [Tiny Powershell Framework](https://github.com/cadegenn/pwsh_fw/releases) for your OS
--	Install it hte usual way
--	Download latest release of [build.pwsh](https://github.com/cadegenn/build.pwsh/releases) for your OS from [this github repository](https://github.com/cadegenn/build.pwsh)
--	Install it hte usual way
+-   Download latest release of [Tiny Powershell Framework](https://github.com/cadegenn/pwsh_fw/releases) for your OS
+-   Install it hte usual way
+-   Download latest release of [build.pwsh](https://github.com/cadegenn/build.pwsh/releases) for your OS from [this github repository](https://github.com/cadegenn/build.pwsh)
+-   Install it hte usual way
 
 ## Requirements
 
 The following files are required for a project to build :
 
--	CHANGELOG.md : your changelog file (see [keepachanglelog.com](https://keepachangelog.com/en/1.0.0/) for a start)
--	LICENSE
--	README.md
--	VERSION : just one line with the current version of your project with 3 digits. No new line. e.g. `1.2.3`
+-   CHANGELOG.md : your changelog file (see [keepachanglelog.com](https://keepachangelog.com/en/1.0.0/) for a start)
+-   LICENSE
+-   README.md
+-   VERSION : just one line with the current version of your project with 3 digits. No new line. e.g. `1.2.3`
 
 The following files are recommended :
 
--	images/favicon.ico (for building a windows setup)
--	images/favicon.png (for building a linux package)
--	images/favicon.icns (for building a macOS package)
+-   images/favicon.ico (for building a windows setup)
+-   images/favicon.png (for building a linux package)
+-   images/favicon.icns (for building a macOS package)
 
 ## Create build environment
 
@@ -72,6 +72,6 @@ $Script:Files = @("CHANGELOG.md", "README.md", "LICENSE", "VERSION", "app.ps1")
 
 ### Create build environment for target OS
 
--	create build env for [debian](DEBIAN.md)
--	create build env for [macOS](MACOS.md)
--	create build env for [Windows](WINDOWS.md)
+-   create build env for [debian](DEBIAN.md)
+-   create build env for [macOS](MACOS.md)
+-   create build env for [Windows](WINDOWS.md)

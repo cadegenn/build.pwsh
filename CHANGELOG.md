@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## \[unreleased\]
+## \[unreleased]
 
 ### Added
 
@@ -13,7 +13,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
-## \[1.0.0\] -
+## \[1.1.0]
+
+### Added
+
+-   Travis CI/CD build debian (bionic) package.deb
+-   Travis CI/CD build macOS (XCode10) package.pkg and package.dmg
+
+### Changed
+
+### Removed
+
+## \[1.0.0] - 2019.09.16
 
 ### Added
 
@@ -21,7 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 -   correctly build debian package
 -   correctly build windows setup.exe
 -   correctly build windows cabinet archive file
--	AppVeyor CI/CD build windows setup.exe and archive.cab
+-   AppVeyor CI/CD build windows setup.exe and archive.cab
 
 ### Changed
 
