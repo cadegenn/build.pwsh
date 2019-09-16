@@ -78,7 +78,7 @@ $build | Out-DistributionXML -Destination /tmp/project.build
 
 #>
 function Out-DistributionXML {
-	[CmdletBinding()]Param (
+	[CmdletBinding()][OutputType([String])]Param (
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][hashtable]$build,
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
