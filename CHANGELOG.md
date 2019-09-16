@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+## \[1.1.0\]
+
+### Added
+
+-	Travis CI/CD build debian package.deb
+
+### Changed
+
+### Removed
+
 ## \[1.0.0\] - 2019.09.16
 
 ### Added
