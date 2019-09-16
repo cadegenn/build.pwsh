@@ -27,9 +27,11 @@ matrix:
             - powershell
           update: true
       before_install:
+        - pwd
         - echo "Pass 01 before_install [linux/xenial]"
         - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-2.1.3.257-all.deb
-        - dpkg -i pwshfw-2.1.3.257-all.deb
+        - ls -aldFh
+        - dpkg -i ./pwshfw-2.1.3.257-all.deb
     - os: osx
       osx_image: xcode10
       before_install:
