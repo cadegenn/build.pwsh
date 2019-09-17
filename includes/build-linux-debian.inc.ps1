@@ -32,14 +32,14 @@ function Out-DebCONTROLFile {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { $rc = New-Item $($Destination) -Force -ItemType Directory}
 	}
 
 	Process {
 		# @url https://www.debian.org/doc/debian-policy/ch-controlfields.html
 		$SIZE = du -sk $build.buildDir | cut -f1
-		# edevel("SIZE = " + $SIZE + "k")
+		edevel("SIZE = " + $SIZE + "k")
 @"
 Package: $($build.PRODUCT_SHORTNAME)
 Version: $($build.version).$($build.number)
@@ -54,6 +54,6 @@ Description: $($build.PRODUCT_DESCRIPTION)
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }

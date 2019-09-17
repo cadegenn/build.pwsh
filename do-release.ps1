@@ -243,15 +243,15 @@ $Global:DEVEL = $true
 
 	# . $APPVEYOR_RC
 
-	# edevel("CURRENT_BRANCH = " + $CURRENT_BRANCH)
-	# edevel("CHANGELOG = " + $CHANGELOG)
-	# edevel("APPVEYOR_RC = " + $APPVEYOR_RC)
-	# edevel("APPVEYOR_YML = " + $APPVEYOR_YML)
-	# edevel("TRAVIS_YML = " + $TRAVIS_YML)
-	# edevel("ACCOUNTNAME = " + $ACCOUNTNAME)
-	# edevel("PROJECT = " + $PROJECT)
-	# edevel("APIKEY = " + $APIKEY)
-	# edevel
+	edevel("CURRENT_BRANCH = " + $CURRENT_BRANCH)
+	edevel("CHANGELOG = " + $CHANGELOG)
+	edevel("APPVEYOR_RC = " + $APPVEYOR_RC)
+	edevel("APPVEYOR_YML = " + $APPVEYOR_YML)
+	edevel("TRAVIS_YML = " + $TRAVIS_YML)
+	edevel("ACCOUNTNAME = " + $ACCOUNTNAME)
+	edevel("PROJECT = " + $PROJECT)
+	edevel("APIKEY = " + $APIKEY)
+	edevel
 
 	# compute release number
 	# parse CHANGELOG.md
@@ -259,7 +259,7 @@ $Global:DEVEL = $true
 	if ($null -eq $TAG ) { efatal("TAG is empty.") }
 	# add current date to CHANGELOG
 	(Get-Content $CHANGELOG) -replace "^## \\\[$($TAG)\\\].*", "## \[$($TAG)\] - $(Get-Date -UFormat "%Y.%m.%d")" | Out-File $CHANGELOG
-	# edevel("TAG = " + $TAG)
+	edevel("TAG = " + $TAG)
 
 	# write new version to appveyor.yml
 	$APPVEYOR_YML_CONTENT = Get-Content $APPVEYOR_YML
@@ -323,13 +323,13 @@ $Global:DEVEL = $true
 	# -AllMatches to get... well... all mathes
 	# [1] because the last changelog is allways [1] from array of matches. [0] is ## [Unreleased]
 	$MESSAGES = Get-Content -Raw $TMP/changelog.tmp | Select-String -Pattern '(?ms)^## .*?^$' -AllMatches
-	# edevel("MESSAGES = " + $MESSAGES.Matches[1])
+	edevel("MESSAGES = " + $MESSAGES.Matches[1])
 	# check if MESSAGE match VERSION number
 	if (-not($MESSAGES.Matches[1] -match $TAG)) { efatal("The last CHANGELOG entry do not seem to match last TAG version number.")}
 	# reduce title level to render more readable in github release page
 	$MESSAGE = ($MESSAGES.Matches[1]) -replace "# ", "## " -replace "'", "``"
-	# edevel("MESSAGE = " + $MESSAGE)
-	# edevel
+	edevel("MESSAGE = " + $MESSAGE)
+	edevel
 
 # switch to branch develop
 # $rc = eexec git checkout develop
