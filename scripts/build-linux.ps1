@@ -56,6 +56,7 @@
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
 	[switch]$Force = $false,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -226,7 +227,7 @@ $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ("build-"
 edevel("buildScript = " + $buildScript)
 if (fileExist "$buildScript") {
 	# eexec "$buildScript"
-	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
+	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force -All"
 } else {
 	efatal($buildScript + " not found.")
 }

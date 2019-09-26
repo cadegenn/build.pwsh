@@ -59,6 +59,7 @@
 	[switch]$App,
 	[switch]$Dmg,
 	[switch]$Pkg,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -211,6 +212,13 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 #############################
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
+
+# Handle -All
+if ($All) {
+	$Dmg = $true
+	$App = $true
+	$Pkg = $true
+}
 
 #
 # COMMON CODE

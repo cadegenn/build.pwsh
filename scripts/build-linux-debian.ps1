@@ -56,6 +56,8 @@
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
 	[switch]$Force = $false,
+	[switch]$Deb,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -210,6 +212,11 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+# Handle -All
+if ($All) {
+	$Deb = $true
+}
+
 #
 # COMMON CODE
 # TODO merge code somewhere
@@ -247,16 +254,18 @@ $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
 # END COMMON CODE
 #
 
-etitle("Build " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
-$rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null
-$rc = New-BuildDirectory -Destination "$($build.buildDir)/$($build.DEFAULT_LINUX_INSTALL_DIR)/$($build.PRODUCT_SHORTNAME)" -build $build
-$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
-edevel "control = $control"
-if (!(fileExist $($control))) { efatal("Cannot find control file at '$control'") }
-
-# finally build debian package
-$rc = eexec fakeroot dpkg -b $build.buildDir $($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
-Get-ChildItem $($build.releases)
+if ($Deb) {
+	etitle("Build " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
+	$rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null
+	$rc = New-BuildDirectory -Destination "$($build.buildDir)/$($build.DEFAULT_LINUX_INSTALL_DIR)/$($build.PRODUCT_SHORTNAME)" -build $build
+	$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
+	edevel "control = $control"
+	if (!(fileExist $($control))) { efatal("Cannot find control file at '$control'") }
+	
+	# finally build debian package
+	$rc = eexec fakeroot dpkg -b $build.buildDir $($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
+	Get-ChildItem $($build.releases)
+}
 
 if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")) {
 	ewarn("The package have been successfully built.")

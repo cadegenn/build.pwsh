@@ -59,6 +59,7 @@
 	[Alias('Setup')]
 	[switch]$Exe,
 	[switch]$Cab,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -212,6 +213,12 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 #############################
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
+
+# Handle -All
+if ($All) {
+	$Cab = $true
+	$Exe = $true
+}
 
 #
 # COMMON CODE
