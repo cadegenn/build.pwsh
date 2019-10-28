@@ -6,7 +6,7 @@ Create `build/windows` directory at the root of the project
 
 ## Target setup.exe
 
-Create a `${PRODUCT_SHORTNAME}.nsi` file into `build/windows` directory.
+Create a `setup.nsi` file into `build/windows` directory.
 
 A template is provided with `build.pwsh` :
 

@@ -93,8 +93,8 @@ function Approve-WindowsBuildEnvironment {
 
 	Process {
 		# PROJECT's NSI config file
-		$rc1 = (fileExist "$($InputObject.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi")
-		ebegin("Check project's NSI conf file ($($InputObject.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi)")
+		$rc1 = (fileExist "$($InputObject.root)\build\windows\setup.nsi")
+		ebegin("Check project's NSI conf file ($($InputObject.root)\build\windows\setup.nsi)")
 		eend $rc1
 
 		return ($rc1)

@@ -276,7 +276,7 @@ if ($Exe) {
 	# create include file for NSIS
 	$build | Out-NullSoftInstallerScriptHeaderFile -FileName "$($build.root)\build\windows\header.nsi"
 	$build.NSIheader = "$($build.root)\build\windows\header.nsi"
-	$build.NSIscript = "$($build.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi"
+	$build.NSIscript = "$($build.root)\build\windows\setup.nsi"
 
 	# discover where is nsis.exe
 	if (fileExist($(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe"))) { $MAKENSIS = $(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe") }
