@@ -56,7 +56,7 @@ install:
   # - pwsh: if ($Env:Configuration -eq 'Debug')  { ./install-modules.ps1 -d -dev -api . }
   # - pwsh: if ($Env:Configuration -eq 'Release') { ./install-modules.ps1 -api . }
   - pwsh: $env:PSModulePath
-  - ps: Start-FileDownload 'https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-$($env:PWSHFW_VERSION).exe'
+  - ps: Start-FileDownload 'https://github.com/cadegenn/pwsh_fw/releases/latest/download/pwshfw-$($PWSHFW_VERSION).exe'
   - cmd: pwshfw-%PWSHFW_VERSION%.exe /S
   # - cmd: dir "c:\Program Files\"
   # - cmd: dir "c:\Program Files\Tiny {PowerShell} Framework"
