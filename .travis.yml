@@ -1,7 +1,7 @@
 language: minimal
 
 env:
-  - PWSHFW_VERSION=2.1.3.257
+  - PWSHFW_VERSION=3.0.3.357
 
 matrix:
   include:
