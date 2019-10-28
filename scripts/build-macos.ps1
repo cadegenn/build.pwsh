@@ -323,8 +323,8 @@ if ($Pkg) {
 	eindent
 	if (dirExist "$($build.buildDir)") { $rc = eexec Remove-Item -Recurse "'$($build.buildDir)'" -Force -ErrorAction:SilentlyContinue }
 	$rc = New-BuildDirectory -Destination $build.buildDir -build $build
-	Copy-Item "$($Global:DIRNAME)/build.rc" "$($Global:DIRNAME)/macos/Contents/Scripts/"
-	$rc = eexec pkgbuild "--root '$($build.buildDir)' --identifier $($build.PRODUCT_ID) --version $($build.version).$($build.number) --install-location $($build.DEFAULT_MACOS_INSTALL_DIR + "/" + $build.PRODUCT_SHORTNAME) --ownership recommended --scripts $($Global:DIRNAME)/macos/Contents/Scripts '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
+	Copy-Item "$($Global:DIRNAME)/build.rc" "$($build.root)/build/macos/Contents/Scripts/"
+	$rc = eexec pkgbuild "--root '$($build.buildDir)' --identifier $($build.PRODUCT_ID) --version $($build.version).$($build.number) --install-location $($build.DEFAULT_MACOS_INSTALL_DIR + "/" + $build.PRODUCT_SHORTNAME) --ownership recommended --scripts $($build.root)/build/macos/Contents/Scripts '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
 	# $build | Out-DistributionXML -Destination "/tmp"
 	# $rc = eexec productbuild "--distribution /tmp/Distribution.xml --resources $($Global:DIRNAME)/macos/Content/Resources --package-path '$($build.buildDir + "/")' --version $($build.version).$($build.number) '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
 	eoutdent
