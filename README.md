@@ -9,6 +9,8 @@
 
 # build.pwsh
 
-`build.pwsh` is a set of scripts to help build multiplatform powershell applications.
+`build.pwsh` is a set of scripts to help build multiplatform powershell
+applications.
 
-With proper environment, it can build windows installer, windows cab archive, debian package, macOS package or macOS installation image.
+With proper environment, it can build windows installer, windows cab archive,
+debian package, macOS package or macOS installation image.

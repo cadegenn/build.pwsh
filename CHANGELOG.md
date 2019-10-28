@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 -   Travis CI/CD build debian (bionic) package.deb
 -   Travis CI/CD build macOS (XCode10) package.pkg and package.dmg
+-	add `-All` parameter to build all target at once
 
 ### Changed
 
