@@ -5,9 +5,9 @@
 ## Install build.pwsh
 
 -   Download latest release of [Tiny Powershell Framework](https://github.com/cadegenn/pwsh_fw/releases) for your OS
--   Install it hte usual way
+-   Install it the usual way
 -   Download latest release of [build.pwsh](https://github.com/cadegenn/build.pwsh/releases) for your OS from [this github repository](https://github.com/cadegenn/build.pwsh)
--   Install it hte usual way
+-   Install it the usual way
 
 ## Requirements
 
@@ -57,7 +57,7 @@ DEFAULT_MACOS_INSTALL_DIR="/opt"
 DEFAULT_WINDOWS_INSTALL_DIR="C:\\Program Files"
 ```
 
-> **NOTE**: later in this documentation, `${PRODUCT_SOMETHING}` will refer to the variable defined in this file.
+> :information_source: **NOTE**: later in this documentation, `${PRODUCT_SOMETHING}` will refer to the variable defined in this file.
 
 ### File `build.conf.ps1`
 
@@ -68,7 +68,7 @@ $Script:Folders = @("images", "includes", "Modules")
 $Script:Files = @("CHANGELOG.md", "README.md", "LICENSE", "VERSION", "app.ps1")
 ```
 
-> **NOTE**: You must at least include `CHANGELOG.md`, `LICENSE`, and `VERSION` files
+> :information_source: **NOTE**: You must at least include `CHANGELOG.md`, `LICENSE`, and `VERSION` files
 
 ### Create build environment for target OS
 
