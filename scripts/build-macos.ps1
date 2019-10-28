@@ -341,20 +341,34 @@ if ($Pkg) {
  ######## ##    ## ########     ##     ## ########  ######   ######  ##     ##  ######   ########
 
 #>
-if (dirExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")
+if ($App) {
+	if (dirExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")
+	} else {
+		eerror "An error occured while building " + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app"
+	}
 }
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")
+
+if ($Dmg) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")
+	} else {
+		eerror "An error occured while building " + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg"
+	}
 }
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")
+
+if ($Pkg) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")
+	} else {
+		eerror "An error occured while building " + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg"
+	}
 }
 
 #############################
