@@ -83,9 +83,12 @@ before_deploy:
 
 deploy:
   api_key:
-    # curl -H "Authorization: token **TOKEN**" https://api.travis-ci.com/v3/repo/cadegenn%2fuild.pwsh/key_pair/generated
+    # https://docs.travis-ci.com/user/encryption-keys/
+    # https://docs.travis-ci.com/user/deployment/releases/
+    # curl -H "Travis-API-Version: 3" -H "Authorization: token TOKEN" https://api.travis-ci.org/repos
+    # curl -H "Travis-API-Version: 3" -H "Authorization: token TOKEN" https://api.travis-ci.com/repo/cadegenn%2Fbuild.pwsh/key_pair/generated
     # TOKEN can be found on user profile page on travis-ci.org
-    secure: MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArKxQOb3zku+rMfN0vUQK\n2TnKJcpOkFXrJlN+o15fS/w3K8IssYixErBoUFnqEXByBDThKVdLDUUDQrkfiCbG\nTVp1X1gAx6M/CuqXqdO2uGmQwAzEyQdT4u+eMPYtBHGexR6VI7jRvY6Q1DkIkPeF\nB+BxYjb+AFc74yVYk0lnb5tFaUiwwkAywRpMTabbtulF1GxNX1pfqZY9Pd+7L2Ly\nOqsCkmkgFFIR9qtCqylvGCrEnZ7g40bD1fopecue98HXkfolhjtLfVh1Db02oR/j\nyEklDN9jWKBmt1/Bz132tLtU98cwceZBBUsgMEQrJ80fgYP4OBzrZwE12yJrIPBo\nvj+G9BlQ/cNnjcXlqU3a7VHCNTdgB7/6dGV4ifQkCPypMrwENP5XSSCdIxRhx4sp\nIkMKllqL7uplYLoEVteEw6Jpp3ry7Z2fVuYOFuHNrhU1tyQyoi1DUa0hveKqR4Gg\nNVVghvJZ7ll2ZZIOxuxd/rFUcc7AB+EuwK+jJ3CfpOid62KA4bhYaXqUGLLDDE6o\nb3nFKCQN/PAH0rqIVSHsaUrrn+r2hbs72SgLYfJK1YXGjDIyrb4yuj4f5lGgEeNq\nh1UJ25D9vJyQKsWp4AINb9dQ6r2BFltrScz4wagSKAUckT/IF//DQFGwmgWPZCD+\nkvuC5T2Fa31ljtVrKt+NDEcCAwEAAQ==
+    secure: atn1w/Sc4+3tPrrormdQKy51Tqtwbz83pJajlh28ZcnON1Dm3oAy2pzjGcLOOO7WT7uq5HvKG/EdPFNcl9x9YhI2ocHbKPNHqhn3IZVqY/+mLWQSlfx56fgPfwdmzvVDcbbqTuEGkwWZ+CnNbYwtwGvOGC6FYwCmwaVUOvHs2OtZ/M2F5nvfhQ8f/0fF2p8bPQywFx9u53L6QpuD1XFs+wqn6/HxlvlHygT3VIslsII8+hGIZe89ogZEygUqpkNOU95EbOo4gF5EESV+MDjM92nikaRyMvmZOBLWtz13HG5RqWwCxkgI3H+CfBqqdEqLO+BfsjPTJ66noJXy85//9gzk8zE/Xh7mzKYgZqAdPOdPPTA8+gy77kOjPwD/8DQI1AgHJzL3Yp8lLudSbPuDB/9jD+3C0lfUKB8c9NHacxpLlHW/+yise2ZuZFFTuoDiLnCsSaj3vfUcnzxMsrGd/oiMDLAzrq+J3GkXJ+mZfJ+xvXnzAwsbeMyE+3XPHMF4FC6asjRK+hf4tcNEob97/EbGGhJQNdwl+nmj3pn3gcnrtcHpEoUhQoNCaBi0uctsMryhzWXA8kvWBBHzk4dymFxOWdBb30HixastOB7OWegi0WC4WoJGHJhytUM+0NxiAEijnYSUM+tB0nkU3R/WBSPd8QkiqfvsToEG8vRjD+E=
   # file: "${TRAVIS_BUILD_DIR}/releases/debian/pwshfw-${TRAVIS_BUILD_VERSION}-all.deb"
   target_commitish: $TRAVIS_COMMIT # <--------both used
   tag_name: $TRAVIS_TAG # <--------both used
@@ -97,6 +100,7 @@ deploy:
   draft: true
   prerelease: true
   on:
+    repo: cadegenn/build.pwsh
     branch: develop
     tags: true
   # - provider: releases
