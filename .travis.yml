@@ -37,10 +37,14 @@ matrix:
         - sudo dpkg -i ./pwshfw-$PWSHFW_VERSION-all.deb
     - os: osx
       osx_image: xcode10
+      addons:
+        homebrew:
+          casks:
+          - powershell
       before_install:
         - echo "Pass 01 before_install [osx/xcode10]"
-        - brew tap homebrew/cask-cask
-        - brew cask install powershell
+        # - brew tap homebrew/cask-cask
+        # - brew cask install powershell
         # - brew install wget # already installed
         - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/Tiny.PowerShell.Framework-$PWSHFW_VERSION.pkg
         - sudo installer -pkg Tiny.PowerShell.Framework-$PWSHFW_VERSION.pkg -target /
