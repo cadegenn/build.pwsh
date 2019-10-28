@@ -39,7 +39,7 @@ matrix:
       osx_image: xcode10
       before_install:
         - echo "Pass 01 before_install [osx/xcode10]"
-        - brew tap caskroom/cask
+        - brew tap homebrew/cask-cask
         - brew cask install powershell
         # - brew install wget # already installed
         - wget https://github.com/cadegenn/pwsh_fw/releases/latest/download/Tiny.PowerShell.Framework-$PWSHFW_VERSION.pkg
