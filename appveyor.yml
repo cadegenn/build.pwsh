@@ -17,7 +17,7 @@ environment:
 # Build worker image (VM template)
 image: 
   # Windows Server 2012
-  - Visual Studio 2015
+  # - Visual Studio 2015
   # Windows Server 2016
   - Visual Studio 2017
 
