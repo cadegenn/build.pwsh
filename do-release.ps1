@@ -224,7 +224,7 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 
 $ErrorActionPreference = "Stop"
 function Set-AppVeyorConfig {
-	[CmdletBinding()]Param (
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
 	)
@@ -233,7 +233,11 @@ function Set-AppVeyorConfig {
 	}
 
 	Process {
-		(Get-Content $File) -replace "^version: .*", "version: $TAG.{build}" | Out-File $File
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+			(Get-Content $File) -replace "^version: .*", "version: $TAG.{build}" | Out-File $File
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
 		return $?
 	}
 
@@ -243,7 +247,7 @@ function Set-AppVeyorConfig {
 }
 
 function Set-TravisConfig {
-	[CmdletBinding()]Param (
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
 	)
@@ -253,6 +257,10 @@ function Set-TravisConfig {
 
 	Process {
 		# nothing to do for the moment
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
 		return $true
 	}
 
@@ -262,7 +270,7 @@ function Set-TravisConfig {
 }
 
 function Set-GitlabConfig {
-	[CmdletBinding()]Param (
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
 		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
 	)
@@ -272,6 +280,10 @@ function Set-GitlabConfig {
 
 	Process {
 		# nothing to do for the moment
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
 		return $true
 	}
 
