@@ -13,4 +13,4 @@
 applications.
 
 With proper environment, it can build windows installer, windows cab archive,
-debian package, macOS package or macOS installation image.
+debian package, macOS package or macOS installation image all at once.
