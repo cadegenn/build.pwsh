@@ -211,7 +211,7 @@ if ((fileExist($([system.io.path]::GetTempPath() + "os.json"))) -and (-not $Forc
 	$os = Get-OperatingSystem -Online
 	$os | ConvertTo-Json | Out-File $([system.io.path]::GetTempPath() + "os.json")
 }
- 
+
 edebug("os.mainstream = " + $os.mainstream)
 edebug("EncodingName = " + [System.Text.Encoding]::Default.EncodingName)
 $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "scripts" + [IO.Path]::DirectorySeparatorChar + ("build-" + $os.mainstream + ".ps1").Replace(' ','').ToLower())
