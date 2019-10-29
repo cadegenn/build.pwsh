@@ -298,7 +298,7 @@ if ($Cab) {
 	ebegin("Building cabinet " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".cab")
 	$ddf = $build | Out-CabinetDefinitionFile -Destination "$($build.buildDir)"
 	if (!(fileExist $ddf)) { efatal("Cannot find cabinet definition file at '$ddf'") }
-	
+
 	# $rc2 = eexec -exe makecab.exe /F "$($build.root)\build\windows\$($build.PRODUCT_SHORTNAME).ddf" /D SourceDir=$($build.root) /D CabinetNameTemplate=$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab /D DiskDirectoryTemplate=$($build.root)\releases
 	$rc = eexec -exe makecab.exe /F "$($build.buildDir + [IO.Path]::DirectorySeparatorChar + "$($build.PRODUCT_SHORTNAME).ddf")"
 	eend $rc

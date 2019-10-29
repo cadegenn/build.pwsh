@@ -265,7 +265,7 @@ if ($Deb) {
 	$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
 	edevel "control = $control"
 	if (!(fileExist $($control))) { efatal("Cannot find control file at '$control'") }
-	
+
 	# finally build debian package
 	$rc = eexec fakeroot dpkg -b $build.buildDir $($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
 	Get-ChildItem $($build.releases)

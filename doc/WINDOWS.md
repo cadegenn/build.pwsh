@@ -108,7 +108,7 @@ FunctionEnd
 
 Section "Install"
 	SetOutPath "$INSTDIR"
-	
+
 	; pack everything
 	File /r /x "*.bak" "${BUILDDIR}\*"
 
