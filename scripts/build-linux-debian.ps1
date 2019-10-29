@@ -259,7 +259,7 @@ $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
 #
 
 if ($Deb) {
-	etitle("Build " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
+	etitle("Build $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number)-all.deb")
 	$rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null
 	$rc = New-BuildDirectory -Destination "$($build.buildDir)/$($build.DEFAULT_LINUX_INSTALL_DIR)/$($build.PRODUCT_SHORTNAME)" -build $build
 	$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
@@ -271,12 +271,19 @@ if ($Deb) {
 	Get-ChildItem $($build.releases)
 }
 
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")
-} else {
-	efatal("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb") not found.")
+if ($Deb) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")
+	} else {
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number)-all.deb"
+		$ERRORFOUND = $true
+	}
+}
+
+if ($ERRORFOUND) {
+	efatal("An error occured. Some package were not built.")
 }
 
 #############################

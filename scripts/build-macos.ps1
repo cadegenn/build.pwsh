@@ -351,7 +351,8 @@ if ($App) {
 		ewarn("It is available at")
 		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".app")
 	} else {
-		eerror "An error occured while building " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".app"
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).app"
+		$ERRORFOUND = $true
 	}
 }
 
@@ -361,7 +362,8 @@ if ($Dmg) {
 		ewarn("It is available at")
 		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".dmg")
 	} else {
-		eerror "An error occured while building " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".dmg"
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).dmg"
+		$ERRORFOUND = $true
 	}
 }
 
@@ -371,8 +373,13 @@ if ($Pkg) {
 		ewarn("It is available at")
 		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg")
 	} else {
-		eerror "An error occured while building " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg"
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).pkg"
+		$ERRORFOUND = $true
 	}
+}
+
+if ($ERRORFOUND) {
+	efatal("An error occured. Some package were not built.")
 }
 
 #############################

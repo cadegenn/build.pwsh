@@ -311,7 +311,7 @@ if ($Exe) {
 		ewarn("The setup package is available at")
 		ewarn("$($build.releases)\$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).exe")
 	} else {
-		eerror("Failed to build setup package.")
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).exe"
 		$ERRORFOUND = $true
 	}
 }
@@ -321,14 +321,15 @@ if ($Cab) {
 		ewarn("The cabinet archive is available at")
 		ewarn("$($build.releases)\$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab")
 	} else {
-		eerror("Failed to build cabinet archive.")
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab"
 		$ERRORFOUND = $true
 	}
 }
 
 if ($ERRORFOUND) {
-	efatal("An error occured. Either .exe or .cab package were not build.")
+	efatal("An error occured. Some package were not built.")
 }
+
 #############################
 ## YOUR SCRIPT ENDS   HERE ##
 #############################
