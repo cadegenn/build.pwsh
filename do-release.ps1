@@ -99,6 +99,9 @@ switch ($PSVersionTable.PSVersion.Major) {
 					if (Test-Path -Path "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS") { [string]$Global:PWSHFW_PATH = "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS" }
 				}
 			}
+			"Win32NT" {
+				$Global:PWSHFW_PATH = Get-ItemPropertyValue 'HKLM:/SOFTWARE/pwshfw' 'InstallDir' -ErrorAction:SilentlyContinue
+			}
 		}
 	}
 }
@@ -108,15 +111,18 @@ if ($api) {
 	if ($rc1) {
 		[string]$Global:PWSHFW_PATH = Resolve-Path $api
 	} else {
-		efatal("You ask to use a custom path ('" + $api + "') to load PWSHFW but we can't find it there.")
+		Write-Error -Message "You ask to use a custom path ('$api') to load PWSHFW but we can't find it there."
+		exit
 	}
 }
 # if PwShFw is not installed, abort and quit
-if ($null -eq $Global:PWSHFW_PATH) { Write-Error "Tiny {PowerShell} Framework not found. Aborting."; exit }
+if ($null -eq $Global:PWSHFW_PATH) { Write-Error -Message "Tiny {PowerShell} Framework not found. Aborting."; exit }
 Import-Module -DisableNameChecking $($Global:PWSHFW_PATH + "/lib/api.psd1") -Force:$Force
-edevel(">>>> " + $MyInvocation.MyCommand.Definition + " <<<<")
-edevel("Using api from '" + $Global:PWSHFW_PATH + "'")
+# Write-Output ">>>> $($MyInvocation.MyCommand.Definition) <<<<"
+Write-Output $(">>>> $DIRNAME" + [IO.Path]::DirectorySeparatorChar + "$BASENAME <<<<")
+Write-Output "Using api from '$($Global:PWSHFW_PATH)'"
 Set-PSModulePath
+if (dirExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules")) { Add-PSModulePath -Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") }
 
 $Global:VERBOSE = $v
 $Global:DEBUG = $d
@@ -158,6 +164,9 @@ if ($log) {
 	}
 	$modules += "PwSh.Log"
 }
+
+# write-output "Language mode :"
+# $ExecutionContext.SessionState.LanguageMode
 
 #
 # Load Everything
@@ -213,6 +222,76 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+$ErrorActionPreference = "Stop"
+function Set-AppVeyorConfig {
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
+	)
+	Begin {
+		eenter($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+
+	Process {
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+			(Get-Content $File) -replace "^version: .*", "version: $TAG.{build}" | Out-File $File
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
+		return $?
+	}
+
+	End {
+		eleave($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+}
+
+function Set-TravisConfig {
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
+	)
+	Begin {
+		eenter($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+
+	Process {
+		# nothing to do for the moment
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
+		return $true
+	}
+
+	End {
+		eleave($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+}
+
+function Set-GitlabConfig {
+	[CmdletBinding(SupportsShouldProcess = $true)]Param (
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$File,
+		[Parameter(Mandatory = $true, ValueFromPipeLine = $false)][string]$Version
+	)
+	Begin {
+		eenter($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+
+	Process {
+		# nothing to do for the moment
+		if ($PSCmdlet.ShouldProcess($File, "Set version")) {
+		} else {
+			Write-Output "Write version $Version to file $File"
+		}
+		return $true
+	}
+
+	End {
+		eleave($Script:NS + '\' + $MyInvocation.MyCommand)
+	}
+}
+
 # WORKFLOW
 
 # Force DEBUG and DEVEL as it may be dangerous to go blind
@@ -221,30 +300,27 @@ $Global:DEVEL = $true
 
 	# some checks
 	$rc = eexec git status
-	if ($rc -eq $False) { 
+	if ($rc -eq $False) {
 		ewarn("'git status' did not return well. Either install git, or make it available in PATH environment variable.")
 		efatal("Something went wrong with 'git status' command.")
 	}
 
+	# README is present
+	$README = Resolve-Path "$Global:DIRNAME/README.md"
+	if (-not(fileExist $README)) { efatal("This project lacks a README.md file.") }
+	edevel("README = " + $README)
 	# CHANGELOG is present
 	$CHANGELOG = Resolve-Path "$Global:DIRNAME/CHANGELOG.md"
 	if (-not(fileExist $CHANGELOG)) { efatal("This project lacks a CHANGELOG.md file. See https://keepachangelog.com/en/1.0.0/ to begin.") }
-	# # appveyor.rc config file is present
-	# $APPVEYOR_RC = Resolve-Path "$Global:DIRNAME/appveyor.conf.ps1"
-	# if (!(fileExist $APPVEYOR_RC)) { efatal("Please configure an appveyor.rc file containing ACCOUNTNAME, PROJECT and APIKEY variables.") }
-	# appveyor.yml config file
-	$APPVEYOR_YML = Resolve-Path "$Global:DIRNAME/appveyor.yml"
-	if (!(fileExist $APPVEYOR_YML)) { efatal("Please configure an appveyor.yml file.") }
-	# travis.yml config file
-	$TRAVIS_YML = Resolve-Path "$Global:DIRNAME/.travis.yml"
-	if (!(fileExist $TRAVIS_YML)) { efatal("Please configure a .travis.yml file.") }
+	edevel("CHANGELOG = " + $CHANGELOG)
+	# VERSION is present
+	$VERSION = Get-Content (Resolve-Path "$Global:DIRNAME/VERSION")
+	if ($null -eq $VERSION) { efatal("This project lacks a VERSION file.") }
+	edevel("VERSION = " + $VERSION)
 	# current branch
 	$CURRENT_BRANCH = ((git branch | Where-Object { $_ -match "^\*" }) -split ' ')[1]
 
-	# . $APPVEYOR_RC
-
 	# edevel("CURRENT_BRANCH = " + $CURRENT_BRANCH)
-	# edevel("CHANGELOG = " + $CHANGELOG)
 	# edevel("APPVEYOR_RC = " + $APPVEYOR_RC)
 	# edevel("APPVEYOR_YML = " + $APPVEYOR_YML)
 	# edevel("TRAVIS_YML = " + $TRAVIS_YML)
@@ -255,60 +331,25 @@ $Global:DEVEL = $true
 
 	# compute release number
 	# parse CHANGELOG.md
-	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^## \\\[([\d\.]*)\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
+	$TAG = Get-Content $CHANGELOG | Select-String -Pattern "^##\s\\\[([\d\.]*)\]" | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -First 1
 	if ($null -eq $TAG ) { efatal("TAG is empty.") }
 	# add current date to CHANGELOG
-	(Get-Content $CHANGELOG) -replace "^## \\\[$($TAG)\\\].*", "## \[$($TAG)\] - $(Get-Date -UFormat "%Y.%m.%d")" | Out-File $CHANGELOG
-	# edevel("TAG = " + $TAG)
+	(Get-Content $CHANGELOG) -replace "^##\s\\\[$($TAG)\\\].*", "## \[$($TAG)\] - $(Get-Date -UFormat "%Y.%m.%d")" | Out-File $CHANGELOG
+	edevel("TAG = " + $TAG)
 
-	# write new version to appveyor.yml
-	$APPVEYOR_YML_CONTENT = Get-Content $APPVEYOR_YML
-	$APPVEYOR_YML_CONTENT = $APPVEYOR_YML_CONTENT -replace "^version: .*", "version: $TAG.{build}"
+	if ($VERSION -ne $TAG) {
+		efatal ("VERSION ($VERSION) and TAG ($TAG) does not match. Have you filled an entry in CHANGELOG ?")
+	}
 
-	# switch ($PsCmdlet.ParameterSetName) {
-	# 	'DRAFT' {
-	# 		if (fileExist "$Global:DIRNAME/DRAFT") {
-	# 			[uint16]$DRAFT_NUMBER = Get-Content "$Global:DIRNAME/DRAFT"
-	# 			$DRAFT_NUMBER++
-	# 			$DRAFT_NUMBER | Out-File "$Global:DIRNAME/DRAFT"
-	# 		} else {
-	# 			New-Item -Path "$Global:DIRNAME/DRAFT" -ItemType file
-	# 			"0" | Out-File "$Global:DIRNAME/DRAFT"
-	# 			eexec git add "$Global:DIRNAME/DRAFT"
-	# 			eexec git -args 'commit "$Global:DIRNAME/DRAFT" -m "new DRAFT file"'
-	# 		}
-	# 		$TAG_DRAFT = "$TAG-draft-$DRAFT_NUMBER"
-	# 		$CURRENT_RELEASE_TAG = $TAG_DRAFT
-	# 		$APPVEYOR_YML_CONTENT = $APPVEYOR_YML_CONTENT -replace "^    release: .*  # DRAFT release", "    release: v$TAG_DRAFT  # DRAFT release"
-	# 	}
-	# 	'PRERELEASE' {
-	# 		if (fileExist "$Global:DIRNAME/PRERELEASE") {
-	# 			[uint16]$PRERELEASE_NUMBER = Get-Content "$Global:DIRNAME/PRERELEASE"
-	# 			$PRERELEASE_NUMBER++
-	# 			$PRERELEASE_NUMBER | Out-File "$Global:DIRNAME/PRERELEASE"
-	# 		} else {
-	# 			New-Item -Path "$Global:DIRNAME/PRERELEASE" -ItemType file
-	# 			"0" | Out-File "$Global:DIRNAME/PRERELEASE"
-	# 			eexec git add "$Global:DIRNAME/PRERELEASE"
-	# 			eexec git -args 'commit "$Global:DIRNAME/PRERELEASE" -m "new PRERELEASE file"'
-	# 		}
-	# 		$TAG_PRERELEASE = "$TAG-pre-$PRERELEASE_NUMBER"
-	# 		$CURRENT_RELEASE_TAG = $TAG_PRERELEASE
-	# 		$APPVEYOR_YML_CONTENT = $APPVEYOR_YML_CONTENT -replace "^    release: .*  # RELEASE release", "    release: v$PRERELEASE_RELEASE  # RELEASE release"
-	# 	}
-	# 	'RELEASE' {
-	# 		$TAG_RELEASE = "$TAG"
-	# 		$CURRENT_RELEASE_TAG = $TAG_RELEASE
-	# 		$APPVEYOR_YML_CONTENT = $APPVEYOR_YML_CONTENT -replace "^    release: .*  # RELEASE release", "    release: v$TAG_RELEASE  # RELEASE release"
-	# 	}
-	# }
-	# # edevel("TAG_DRAFT = $TAG_DRAFT")
-	# # edevel("TAG_PRERELEASE = $TAG_PRERELEASE")
-	# # edevel("TAG_RELEASE = $TAG_RELEASE")
-
-	# # write new version to appveyor.yml
-	$APPVEYOR_YML_CONTENT | Out-File $APPVEYOR_YML
-	# # $APPVEYOR_YML_CONTENT
+	# appveyor.yml config file
+	$APPVEYOR_YML = Resolve-Path "$Global:DIRNAME/appveyor.yml" -ErrorAction SilentlyContinue
+	if (fileExist $APPVEYOR_YML) { Set-AppVeyorConfig -File $APPVEYOR_YML -Version $TAG }
+	# travis.yml config file
+	$TRAVIS_YML = Resolve-Path "$Global:DIRNAME/.travis.yml" -ErrorAction SilentlyContinue
+	if (fileExist $TRAVIS_YML) { Set-TravisConfig -File $TRAVIS_YML -Version $TAG }
+	# gitlab.yml config file
+	$GITLAB_YML = Resolve-Path "$Global:DIRNAME/.gitlab-ci.yml" -ErrorAction SilentlyContinue
+	if (fileExist $GITLAB_YML) { Set-GitlabConfig -File $GITLAB_YML -Version $TAG }
 
 	# get changelog about release number
 	# parse CHANGELOG.md
@@ -323,18 +364,20 @@ $Global:DEVEL = $true
 	# -AllMatches to get... well... all mathes
 	# [1] because the last changelog is allways [1] from array of matches. [0] is ## [Unreleased]
 	$MESSAGES = Get-Content -Raw $TMP/changelog.tmp | Select-String -Pattern '(?ms)^## .*?^$' -AllMatches
-	# edevel("MESSAGES = " + $MESSAGES.Matches[1])
+	edevel("MESSAGES = " + $MESSAGES.Matches[1])
 	# check if MESSAGE match VERSION number
 	if (-not($MESSAGES.Matches[1] -match $TAG)) { efatal("The last CHANGELOG entry do not seem to match last TAG version number.")}
 	# reduce title level to render more readable in github release page
 	$MESSAGE = ($MESSAGES.Matches[1]) -replace "# ", "## " -replace "'", "``"
-	# edevel("MESSAGE = " + $MESSAGE)
-	# edevel
+	edevel("MESSAGE = " + $MESSAGE)
 
 # switch to branch develop
 # $rc = eexec git checkout develop
 
-# commit everything 
+# remove *.bak files
+Get-ChildItem "*.bak" -Recurse | remove-item -Confirm:$false
+
+# commit everything
 # $rc = eexec git commit -am "'$MESSAGE'"
 $rc = eexec git commit -am "'general commit before tag $TAG'"
 # if ($rc -eq $false) { efatal("Unable to commit changes.") }
@@ -353,14 +396,62 @@ if ($CURRENT_BRANCH -eq "release/v$TAG") {
 	if ($rc -eq $false) { efatal("Unable to create new release 'release/v$TAG'.") }
 }
 
+# update modules manifests
+everbose "Update modules manifests"
+foreach ($psd in (get-childitem -path "$($Global:DIRNAME)/lib","$($Global:DIRNAME)/Dictionaries","$($Global:DIRNAME)/Includes","$($Global:DIRNAME)/Modules" "*.psd1" -recurse)) {
+	# eenter $psd.Name
+	Import-Module $psd.FullName -force -DisableNameChecking
+	$rc = $?
+	# foreach ($cmd in (Get-Command -Module $psd.BaseName)) {
+	# 	edebug $cmd
+	# }
+	if ($rc -eq $true) {
+		$module = Get-Module -ListAvailable -FullyQualifiedName $psd.FullName
+		edevel ("Functions list :")
+		$functionsList = Get-Command -Module $module.Name
+		$functionsList.Name | ForEach-Object { edevel $_}
+		edevel ("Aliases list :")
+		$aliasesList = Get-Alias | Where-Object { $_.ModuleName -eq $module.Name }
+		$aliasesList.Name | ForEach-Object { edevel $_}
+		if ($aliasesList.count -eq 0) { $aliasesList = '' }
+
+		Update-ModuleManifest -Path $psd.FullName -FunctionsToExport $functionsList -CmdletsToExport '' -AliasesToExport $aliasesList -ModuleVersion $TAG
+		# trim triling spaces
+		$content = Get-Content $psd.FullName
+		$content | ForEach-Object {$_.TrimEnd()} | Set-Content $psd.FullName
+	}
+	# eoutdent
+}
+eexec git commit -am "'Update all module manifests'"
+
+# trim triling spaces
+foreach ($f in (Get-ChildItem -Path "$($Global:DIRNAME)" -include "*.ps1", "*.psd1", "*.psm1", "*.md" -recurse)) {
+	$content = Get-Content $f
+	$content | ForEach-Object {$_.TrimEnd()} | Set-Content $f
+}
+$rc = eexec -exe git -args "diff --exit-code" -AsInt
+if ($rc -ne 0) {
+	$rc = eexec git commit -am "'Remove trailing spaces'"
+	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+	$rc = eexec git push --set-upstream origin release/v${TAG}
+	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+}
+
 # comment every edebug(), edevel(), eenter() and eeleave() calls in every single file
-ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.ps1")) {
+everbose "Comment out debug messages"
+ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.psm1")) {
 	(Get-Content $f.FullName) -replace "^(\s+)edebug", '$1# edebug' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)edevel", '$1# edevel' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)eenter", '$1# eenter' | Set-Content -Encoding UTF8 $f.FullName
 	(Get-Content $f.FullName) -replace "^(\s+)eleave", '$1# eleave' | Set-Content -Encoding UTF8 $f.FullName
 }
+
+# change branch to master for README's badges
+everbose "Change branch reference in README"
+(Get-Content $README) -replace '\bdevelop\b', 'master' | Out-File $README
+
 # commit everything
+everbose "Commit everything"
 $rc = eexec -exe git -args "diff --exit-code" -AsInt
 if ($rc -ne 0) {
 	$rc = eexec git commit -am "'removed debugging messages'"
@@ -385,16 +476,29 @@ if ($rc -eq $false) { efatal("Unable to push master branch.") }
 # switch bask to branch develop
 eexec git checkout develop
 
-# uncomment every edebug(), edevel(), eenter() and eeleave() calls in every single file
-ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.ps1")) {
-	(Get-Content $f.FullName) -replace "^(\s+)# edebug", '$1edebug' | Set-Content -Encoding UTF8 $f.FullName
-	(Get-Content $f.FullName) -replace "^(\s+)# edevel", '$1edevel' | Set-Content -Encoding UTF8 $f.FullName
-	(Get-Content $f.FullName) -replace "^(\s+)# eenter", '$1eenter' | Set-Content -Encoding UTF8 $f.FullName
-	(Get-Content $f.FullName) -replace "^(\s+)# eleave", '$1eleave' | Set-Content -Encoding UTF8 $f.FullName
-}
+# # uncomment every edebug(), edevel(), eenter() and eeleave() calls in every single file
+# ForEach ($f in (Get-ChildItem -Path $Global:DIRNAME -Recurse -Include "*.psm1")) {
+# 	(Get-Content $f.FullName) -replace "^(\s+)# edebug", '$1edebug' | Set-Content -Encoding UTF8 $f.FullName
+# 	(Get-Content $f.FullName) -replace "^(\s+)# edevel", '$1edevel' | Set-Content -Encoding UTF8 $f.FullName
+# 	(Get-Content $f.FullName) -replace "^(\s+)# eenter", '$1eenter' | Set-Content -Encoding UTF8 $f.FullName
+# 	(Get-Content $f.FullName) -replace "^(\s+)# eleave", '$1eleave' | Set-Content -Encoding UTF8 $f.FullName
+# }
+
+# $rc = eexec -exe git -args "diff --exit-code" -AsInt
+# if ($rc -ne 0) {
+# 	$rc = eexec git commit -am "'get back debugging messages'"
+# 	if ($rc -eq $false) { efatal("Unable to commit changes.") }
+# 	$rc = eexec git push
+# 	if ($rc -eq $false) { efatal("Unable to push upstream.") }
+# }
+
+# change branch to master for README's badges
+everbose "Change branch reference in README"
+(Get-Content $README) -replace '\bmaster\b', 'develop' | Out-File $README
+
 $rc = eexec -exe git -args "diff --exit-code" -AsInt
 if ($rc -ne 0) {
-	$rc = eexec git commit -am "'get back debugging messages'"
+	$rc = eexec git commit -am "'update branch name'"
 	if ($rc -eq $false) { efatal("Unable to commit changes.") }
 	$rc = eexec git push
 	if ($rc -eq $false) { efatal("Unable to push upstream.") }

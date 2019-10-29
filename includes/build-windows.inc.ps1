@@ -4,7 +4,7 @@ function Out-NullSoftInstallerScriptHeaderFile {
 		[Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$Filename
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 	}
 
 	Process {
@@ -21,7 +21,7 @@ function Out-NullSoftInstallerScriptHeaderFile {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 Set-Alias -Name Out-NSISHeader -Value Out-NullSoftInstallerScriptHeaderFile
@@ -35,7 +35,7 @@ function Out-CabinetDefinitionFile {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { New-Item $($Destination) -Force -ItemType Directory }
 	}
 
@@ -79,7 +79,7 @@ function Out-CabinetDefinitionFile {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 
@@ -88,19 +88,19 @@ function Approve-WindowsBuildEnvironment {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)]$InputObject
 	)
 	Begin {
-		# eenter($Script:NS + '\' + $MyInvocation.MyCommand)
+		eenter($Script:NS + '\' + $MyInvocation.MyCommand)
 	}
 
 	Process {
 		# PROJECT's NSI config file
-		$rc1 = (fileExist "$($InputObject.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi")
-		ebegin("Check project's NSI conf file ($($InputObject.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi)")
+		$rc1 = (fileExist "$($InputObject.root)\build\windows\setup.nsi")
+		ebegin("Check project's NSI conf file ($($InputObject.root)\build\windows\setup.nsi)")
 		eend $rc1
 
 		return ($rc1)
 	}
 
 	End {
-		# eleave($Script:NS + '\' + $MyInvocation.MyCommand)
+		eleave($Script:NS + '\' + $MyInvocation.MyCommand)
 	}
 }

@@ -56,6 +56,7 @@
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
 	[switch]$Force = $false,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -90,6 +91,9 @@ switch ($PSVersionTable.PSVersion.Major) {
 					if (Test-Path -Path "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS") { [string]$Global:PWSHFW_PATH = "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS" }
 				}
 			}
+			"Win32NT" {
+				$Global:PWSHFW_PATH = Get-ItemPropertyValue 'HKLM:/SOFTWARE/pwshfw' 'InstallDir' -ErrorAction:SilentlyContinue
+			}
 		}
 	}
 }
@@ -99,15 +103,18 @@ if ($api) {
 	if ($rc1) {
 		[string]$Global:PWSHFW_PATH = Resolve-Path $api
 	} else {
-		efatal("You ask to use a custom path ('" + $api + "') to load PWSHFW but we can't find it there.")
+		Write-Error -Message "You ask to use a custom path ('$api') to load PWSHFW but we can't find it there."
+		exit
 	}
 }
 # if PwShFw is not installed, abort and quit
-if ($null -eq $Global:PWSHFW_PATH) { Write-Error "Tiny {PowerShell} Framework not found. Aborting."; exit }
+if ($null -eq $Global:PWSHFW_PATH) { Write-Error -Message "Tiny {PowerShell} Framework not found. Aborting."; exit }
 Import-Module -DisableNameChecking $($Global:PWSHFW_PATH + "/lib/api.psd1") -Force:$Force
-edevel(">>>> " + $MyInvocation.MyCommand.Definition + " <<<<")
-edevel("Using api from '" + $Global:PWSHFW_PATH + "'")
-$env:PSModulePath = $($Global:PWSHFW_PATH + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
+# Write-Output ">>>> $($MyInvocation.MyCommand.Definition) <<<<"
+Write-Output $(">>>> $DIRNAME" + [IO.Path]::DirectorySeparatorChar + "$BASENAME <<<<")
+Write-Output "Using api from '$($Global:PWSHFW_PATH)'"
+Set-PSModulePath
+if (dirExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules")) { Add-PSModulePath -Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") }
 
 $Global:VERBOSE = $v
 $Global:DEBUG = $d
@@ -150,15 +157,13 @@ if ($log) {
 	$modules += "PwSh.Log"
 }
 
+# write-output "Language mode :"
+# $ExecutionContext.SessionState.LanguageMode
+
 #
 # Load Everything
 #
 everbose("Loading modules")
-if (dirExist($($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules"))) {
-    $env:PSModulePath = $env:PSModulePath -replace (([IO.Path]::PathSeparator + $Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") -replace "\\", "\\")
-    $env:PSModulePath = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
-    # edevel("env:PSModulePath = " + $env:PSModulePath)
-}
 # $modules += "PsIni"
 # $modules += "PwSh.ConfigFile"
 # $modules += "Microsoft.PowerShell.Archive"
@@ -226,7 +231,7 @@ $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + ("build-"
 edevel("buildScript = " + $buildScript)
 if (fileExist "$buildScript") {
 	# eexec "$buildScript"
-	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
+	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force -All"
 } else {
 	efatal($buildScript + " not found.")
 }

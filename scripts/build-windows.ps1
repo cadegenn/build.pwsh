@@ -59,6 +59,7 @@
 	[Alias('Setup')]
 	[switch]$Exe,
 	[switch]$Cab,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -93,6 +94,9 @@ switch ($PSVersionTable.PSVersion.Major) {
 					if (Test-Path -Path "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS") { [string]$Global:PWSHFW_PATH = "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS" }
 				}
 			}
+			"Win32NT" {
+				$Global:PWSHFW_PATH = Get-ItemPropertyValue 'HKLM:/SOFTWARE/pwshfw' 'InstallDir' -ErrorAction:SilentlyContinue
+			}
 		}
 	}
 }
@@ -102,15 +106,18 @@ if ($api) {
 	if ($rc1) {
 		[string]$Global:PWSHFW_PATH = Resolve-Path $api
 	} else {
-		efatal("You ask to use a custom path ('" + $api + "') to load PWSHFW but we can't find it there.")
+		Write-Error -Message "You ask to use a custom path ('$api') to load PWSHFW but we can't find it there."
+		exit
 	}
 }
 # if PwShFw is not installed, abort and quit
-if ($null -eq $Global:PWSHFW_PATH) { Write-Error "Tiny {PowerShell} Framework not found. Aborting."; exit }
+if ($null -eq $Global:PWSHFW_PATH) { Write-Error -Message "Tiny {PowerShell} Framework not found. Aborting."; exit }
 Import-Module -DisableNameChecking $($Global:PWSHFW_PATH + "/lib/api.psd1") -Force:$Force
-edevel(">>>> " + $MyInvocation.MyCommand.Definition + " <<<<")
-edevel("Using api from '" + $Global:PWSHFW_PATH + "'")
-$env:PSModulePath = $($Global:PWSHFW_PATH + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
+# Write-Output ">>>> $($MyInvocation.MyCommand.Definition) <<<<"
+Write-Output $(">>>> $DIRNAME" + [IO.Path]::DirectorySeparatorChar + "$BASENAME <<<<")
+Write-Output "Using api from '$($Global:PWSHFW_PATH)'"
+Set-PSModulePath
+if (dirExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules")) { Add-PSModulePath -Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") }
 
 $Global:VERBOSE = $v
 $Global:DEBUG = $d
@@ -153,15 +160,13 @@ if ($log) {
 	$modules += "PwSh.Log"
 }
 
+# write-output "Language mode :"
+# $ExecutionContext.SessionState.LanguageMode
+
 #
 # Load Everything
 #
 everbose("Loading modules")
-if (dirExist($($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules"))) {
-    $env:PSModulePath = $env:PSModulePath -replace (([IO.Path]::PathSeparator + $Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") -replace "\\", "\\")
-    $env:PSModulePath = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
-    # edevel("env:PSModulePath = " + $env:PSModulePath)
-}
 # $modules += "PsIni"
 # $modules += "PwSh.ConfigFile"
 # $modules += "Microsoft.PowerShell.Archive"
@@ -213,6 +218,12 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+# Handle -All
+if ($All) {
+	$Cab = $true
+	$Exe = $true
+}
+
 #
 # COMMON CODE
 # TODO merge code somewhere
@@ -239,7 +250,7 @@ $build += Get-BuildRC -From $($build.rc)
 $build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	# edevel($build | ConvertTo-Json)
+	edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
 
@@ -252,7 +263,7 @@ $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
 
 $rc = Approve-WindowsBuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	# edevel($build | ConvertTo-Json)
+	edevel($build | ConvertTo-Json)
 	efatal("Windows environment is not functional.")
 }
 
@@ -269,7 +280,7 @@ if ($Exe) {
 	# create include file for NSIS
 	$build | Out-NullSoftInstallerScriptHeaderFile -FileName "$($build.root)\build\windows\header.nsi"
 	$build.NSIheader = "$($build.root)\build\windows\header.nsi"
-	$build.NSIscript = "$($build.root)\build\windows\$($build.PRODUCT_SHORTNAME).nsi"
+	$build.NSIscript = "$($build.root)\build\windows\setup.nsi"
 
 	# discover where is nsis.exe
 	if (fileExist($(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe"))) { $MAKENSIS = $(${env:ProgramFiles(x86)} + "\NSIS\makensis.exe") }
@@ -277,7 +288,7 @@ if ($Exe) {
 	if (!$MAKENSIS) {
 		eerror("makensis.exe not found")
 	} else {
-		# edevel("MAKENSIS = " + $MAKENSIS)
+		edevel("MAKENSIS = " + $MAKENSIS)
 		$rc = eexec -exe "$MAKENSIS" "/V$debugLevel /INPUTCHARSET UTF8 /OUTPUTCHARSET UTF8 '$($build.NSIheader)' '$($build.NSIscript)'"
 		eend $rc
 	}
@@ -287,7 +298,7 @@ if ($Cab) {
 	ebegin("Building cabinet " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".cab")
 	$ddf = $build | Out-CabinetDefinitionFile -Destination "$($build.buildDir)"
 	if (!(fileExist $ddf)) { efatal("Cannot find cabinet definition file at '$ddf'") }
-	
+
 	# $rc2 = eexec -exe makecab.exe /F "$($build.root)\build\windows\$($build.PRODUCT_SHORTNAME).ddf" /D SourceDir=$($build.root) /D CabinetNameTemplate=$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab /D DiskDirectoryTemplate=$($build.root)\releases
 	$rc = eexec -exe makecab.exe /F "$($build.buildDir + [IO.Path]::DirectorySeparatorChar + "$($build.PRODUCT_SHORTNAME).ddf")"
 	eend $rc
@@ -300,7 +311,7 @@ if ($Exe) {
 		ewarn("The setup package is available at")
 		ewarn("$($build.releases)\$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).exe")
 	} else {
-		eerror("Failed to build setup package.")
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).exe"
 		$ERRORFOUND = $true
 	}
 }
@@ -310,14 +321,15 @@ if ($Cab) {
 		ewarn("The cabinet archive is available at")
 		ewarn("$($build.releases)\$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab")
 	} else {
-		eerror("Failed to build cabinet archive.")
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).cab"
 		$ERRORFOUND = $true
 	}
 }
 
 if ($ERRORFOUND) {
-	efatal("An error occured. Either .exe or .cab package were not build.")
+	efatal("An error occured. Some package were not built.")
 }
+
 #############################
 ## YOUR SCRIPT ENDS   HERE ##
 #############################

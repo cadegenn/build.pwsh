@@ -21,7 +21,7 @@ function Get-BuildRC {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$From
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 	}
 
 	Process {
@@ -33,13 +33,13 @@ function Get-BuildRC {
 		$build = $build.Keys | ForEach-Object { $b = @{} } { $b[$_] = $build.$_.Trim('"') } { $b }
 		$build.buildDir = $([system.io.path]::GetTempPath() + $build.PRODUCT_SHORTNAME + ".build")
 		$rc = New-Item $build.buildDir -ItemType Directory -ErrorAction SilentlyContinue
-		# edevel($build | ConvertTo-Json)
+		edevel($build | ConvertTo-Json)
 
 		return $build
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 
@@ -62,7 +62,7 @@ function Get-BuildEnvironment {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)][string]$ProjectPath
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 	}
 
 	Process {
@@ -93,7 +93,7 @@ function Get-BuildEnvironment {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 
@@ -121,7 +121,7 @@ function Approve-BuildEnvironment {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $true)]$InputObject
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 	}
 
 	Process {
@@ -173,7 +173,7 @@ function Approve-BuildEnvironment {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 
@@ -191,7 +191,7 @@ function New-BuildDirectory {
 		# [Parameter(Mandatory = $false,ValueFromPipeLine = $false)][string]$DefaultInstallDir
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { $rc = New-Item $($Destination) -Force -ItemType Directory -ErrorAction SilentlyContinue }
 	}
 
@@ -237,6 +237,6 @@ function New-BuildDirectory {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }

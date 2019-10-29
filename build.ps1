@@ -152,7 +152,7 @@ everbose("Loading modules")
 if (dirExist($($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules"))) {
     $env:PSModulePath = $env:PSModulePath -replace (([IO.Path]::PathSeparator + $Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") -replace "\\", "\\")
     $env:PSModulePath = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
-    # edevel("env:PSModulePath = " + $env:PSModulePath)
+    edevel("env:PSModulePath = " + $env:PSModulePath)
 }
 # $modules += "PsIni"
 # $modules += "PwSh.ConfigFile"
@@ -211,13 +211,13 @@ if ((fileExist($([system.io.path]::GetTempPath() + "os.json"))) -and (-not $Forc
 	$os = Get-OperatingSystem -Online
 	$os | ConvertTo-Json | Out-File $([system.io.path]::GetTempPath() + "os.json")
 }
- 
+
 edebug("os.mainstream = " + $os.mainstream)
 edebug("EncodingName = " + [System.Text.Encoding]::Default.EncodingName)
 $buildScript = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "scripts" + [IO.Path]::DirectorySeparatorChar + ("build-" + $os.mainstream + ".ps1").Replace(' ','').ToLower())
 edebug("buildScript = " + $buildScript)
 if (fileExist "$buildScript") {
-	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force"
+	eexec -exe "$buildScript" "-ProjectPath $ProjectPath -d:`$Global:DEBUG -dev:`$Global:DEVEL -api `$Global:PWSHFW_PATH -Force:`$Force -All"
 } else {
 	efatal($buildScript + " not found.")
 }

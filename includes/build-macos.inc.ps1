@@ -24,7 +24,7 @@ function Out-InfoPlist {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { New-Item $($Destination) -Force -ItemType Directory }
 	}
 
@@ -51,7 +51,7 @@ function Out-InfoPlist {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }
 
@@ -83,7 +83,7 @@ function Out-DistributionXML {
 		[Parameter(Mandatory = $true,ValueFromPipeLine = $false)][string]$Destination
 	)
 	Begin {
-		# eenter($MyInvocation.MyCommand)
+		eenter($MyInvocation.MyCommand)
 		if (!(dirExist($Destination))) { New-Item $($Destination) -Force -ItemType Directory }
 	}
 
@@ -123,6 +123,6 @@ function Out-DistributionXML {
 	}
 
 	End {
-		# eleave($MyInvocation.MyCommand)
+		eleave($MyInvocation.MyCommand)
 	}
 }

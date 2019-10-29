@@ -56,6 +56,8 @@
 		Test-Path -Path $_ -PathType leaf
 	})][string]$configFile = "",
 	[switch]$Force = $false,
+	[switch]$Deb,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -90,6 +92,9 @@ switch ($PSVersionTable.PSVersion.Major) {
 					if (Test-Path -Path "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS") { [string]$Global:PWSHFW_PATH = "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS" }
 				}
 			}
+			"Win32NT" {
+				$Global:PWSHFW_PATH = Get-ItemPropertyValue 'HKLM:/SOFTWARE/pwshfw' 'InstallDir' -ErrorAction:SilentlyContinue
+			}
 		}
 	}
 }
@@ -99,15 +104,18 @@ if ($api) {
 	if ($rc1) {
 		[string]$Global:PWSHFW_PATH = Resolve-Path $api
 	} else {
-		efatal("You ask to use a custom path ('" + $api + "') to load PWSHFW but we can't find it there.")
+		Write-Error -Message "You ask to use a custom path ('$api') to load PWSHFW but we can't find it there."
+		exit
 	}
 }
 # if PwShFw is not installed, abort and quit
-if ($null -eq $Global:PWSHFW_PATH) { Write-Error "Tiny {PowerShell} Framework not found. Aborting."; exit }
+if ($null -eq $Global:PWSHFW_PATH) { Write-Error -Message "Tiny {PowerShell} Framework not found. Aborting."; exit }
 Import-Module -DisableNameChecking $($Global:PWSHFW_PATH + "/lib/api.psd1") -Force:$Force
-edevel(">>>> " + $MyInvocation.MyCommand.Definition + " <<<<")
-edevel("Using api from '" + $Global:PWSHFW_PATH + "'")
-$env:PSModulePath = $($Global:PWSHFW_PATH + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
+# Write-Output ">>>> $($MyInvocation.MyCommand.Definition) <<<<"
+Write-Output $(">>>> $DIRNAME" + [IO.Path]::DirectorySeparatorChar + "$BASENAME <<<<")
+Write-Output "Using api from '$($Global:PWSHFW_PATH)'"
+Set-PSModulePath
+if (dirExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules")) { Add-PSModulePath -Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") }
 
 $Global:VERBOSE = $v
 $Global:DEBUG = $d
@@ -150,15 +158,13 @@ if ($log) {
 	$modules += "PwSh.Log"
 }
 
+# write-output "Language mode :"
+# $ExecutionContext.SessionState.LanguageMode
+
 #
 # Load Everything
 #
 everbose("Loading modules")
-if (dirExist($($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules"))) {
-    $env:PSModulePath = $env:PSModulePath -replace (([IO.Path]::PathSeparator + $Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") -replace "\\", "\\")
-    $env:PSModulePath = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
-    # edevel("env:PSModulePath = " + $env:PSModulePath)
-}
 # $modules += "PsIni"
 # $modules += "PwSh.ConfigFile"
 # $modules += "Microsoft.PowerShell.Archive"
@@ -210,6 +216,11 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+# Handle -All
+if ($All) {
+	$Deb = $true
+}
+
 #
 # COMMON CODE
 # TODO merge code somewhere
@@ -236,7 +247,7 @@ $build += Get-BuildRC -From $($build.rc)
 $build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	# edevel($build | ConvertTo-Json)
+	edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
 
@@ -247,23 +258,32 @@ $rc = eexec New-Item "'$($build.buildDir)' -ItemType container -Force"
 # END COMMON CODE
 #
 
-etitle("Build " + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
-$rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null
-$rc = New-BuildDirectory -Destination "$($build.buildDir)/$($build.DEFAULT_LINUX_INSTALL_DIR)/$($build.PRODUCT_SHORTNAME)" -build $build
-$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
-edevel "control = $control"
-if (!(fileExist $($control))) { efatal("Cannot find control file at '$control'") }
+if ($Deb) {
+	etitle("Build $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number)-all.deb")
+	$rc = New-BuildDirectory -Template "$($ProjectPath)/debian" -Destination $build.buildDir -build $null
+	$rc = New-BuildDirectory -Destination "$($build.buildDir)/$($build.DEFAULT_LINUX_INSTALL_DIR)/$($build.PRODUCT_SHORTNAME)" -build $build
+	$control = $build | Out-DebCONTROLFile -Destination "$($build.buildDir)/DEBIAN"
+	edevel "control = $control"
+	if (!(fileExist $($control))) { efatal("Cannot find control file at '$control'") }
 
-# finally build debian package
-$rc = eexec fakeroot dpkg -b $build.buildDir $($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
-Get-ChildItem $($build.releases)
+	# finally build debian package
+	$rc = eexec fakeroot dpkg -b $build.buildDir $($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")
+	Get-ChildItem $($build.releases)
+}
 
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")
-} else {
-	efatal("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb") not found.")
+if ($Deb) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + "-all.deb")")
+	} else {
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number)-all.deb"
+		$ERRORFOUND = $true
+	}
+}
+
+if ($ERRORFOUND) {
+	efatal("An error occured. Some package were not built.")
 }
 
 #############################

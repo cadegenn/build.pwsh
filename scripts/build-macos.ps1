@@ -59,6 +59,7 @@
 	[switch]$App,
 	[switch]$Dmg,
 	[switch]$Pkg,
+	[switch]$All,
 	[Parameter(Mandatory = $true, ValueFromPipeLine = $true)][string]$ProjectPath
 )
 
@@ -93,6 +94,9 @@ switch ($PSVersionTable.PSVersion.Major) {
 					if (Test-Path -Path "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS") { [string]$Global:PWSHFW_PATH = "/Applications/Utilities/Tiny {PowerShell} Framework.app/Contents/MacOS" }
 				}
 			}
+			"Win32NT" {
+				$Global:PWSHFW_PATH = Get-ItemPropertyValue 'HKLM:/SOFTWARE/pwshfw' 'InstallDir' -ErrorAction:SilentlyContinue
+			}
 		}
 	}
 }
@@ -102,15 +106,18 @@ if ($api) {
 	if ($rc1) {
 		[string]$Global:PWSHFW_PATH = Resolve-Path $api
 	} else {
-		efatal("You ask to use a custom path ('" + $api + "') to load PWSHFW but we can't find it there.")
+		Write-Error -Message "You ask to use a custom path ('$api') to load PWSHFW but we can't find it there."
+		exit
 	}
 }
 # if PwShFw is not installed, abort and quit
-if ($null -eq $Global:PWSHFW_PATH) { Write-Error "Tiny {PowerShell} Framework not found. Aborting."; exit }
+if ($null -eq $Global:PWSHFW_PATH) { Write-Error -Message "Tiny {PowerShell} Framework not found. Aborting."; exit }
 Import-Module -DisableNameChecking $($Global:PWSHFW_PATH + "/lib/api.psd1") -Force:$Force
-edevel(">>>> " + $MyInvocation.MyCommand.Definition + " <<<<")
-edevel("Using api from '" + $Global:PWSHFW_PATH + "'")
-$env:PSModulePath = $($Global:PWSHFW_PATH + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
+# Write-Output ">>>> $($MyInvocation.MyCommand.Definition) <<<<"
+Write-Output $(">>>> $DIRNAME" + [IO.Path]::DirectorySeparatorChar + "$BASENAME <<<<")
+Write-Output "Using api from '$($Global:PWSHFW_PATH)'"
+Set-PSModulePath
+if (dirExist $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules")) { Add-PSModulePath -Path $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") }
 
 $Global:VERBOSE = $v
 $Global:DEBUG = $d
@@ -153,15 +160,13 @@ if ($log) {
 	$modules += "PwSh.Log"
 }
 
+# write-output "Language mode :"
+# $ExecutionContext.SessionState.LanguageMode
+
 #
 # Load Everything
 #
 everbose("Loading modules")
-if (dirExist($($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules"))) {
-    $env:PSModulePath = $env:PSModulePath -replace (([IO.Path]::PathSeparator + $Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") -replace "\\", "\\")
-    $env:PSModulePath = $($Global:DIRNAME + [IO.Path]::DirectorySeparatorChar + "Modules") + [IO.Path]::PathSeparator + $env:PSModulePath
-    # edevel("env:PSModulePath = " + $env:PSModulePath)
-}
 # $modules += "PsIni"
 # $modules += "PwSh.ConfigFile"
 # $modules += "Microsoft.PowerShell.Archive"
@@ -212,6 +217,13 @@ if ($ERRORFOUND) { efatal("At least one module could not be loaded.") }
 ## YOUR SCRIPT BEGINS HERE ##
 #############################
 
+# Handle -All
+if ($All) {
+	$Dmg = $true
+	$App = $true
+	$Pkg = $true
+}
+
 #
 # COMMON CODE
 # TODO merge code somewhere
@@ -238,7 +250,7 @@ $build += Get-BuildRC -From $($build.rc)
 $build += Get-BuildEnvironment -ProjectPath $ProjectPath
 $rc = Approve-BuildEnvironment -InputObject $build
 if ($rc -eq $False) {
-	# edevel($build | ConvertTo-Json)
+	edevel($build | ConvertTo-Json)
 	efatal("Environment is not functional.")
 }
 
@@ -263,15 +275,15 @@ if ($Dmg) { $App = $true }
 
 #>
 if ($App) {
-	etitle("Build " + $build.PRODUCT_FULLNAME + ".app")
+	etitle("Build " + $build.PRODUCT_SHORTNAME + ".app")
 	eindent
 	# $layout = New-MacOSBuildLayout -build $build -SourceFolders $Script:folders -SourceFiles $Script:files -Type App
 	# # eexec rsync -a --delete $layout $($build.releases + "/")
-	# $rc = eexec rsync "-a --delete '$layout/' '$($build.releases)/$($build.PRODUCT_FULLNAME)-$($build.version).$($build.number).app'"
+	# $rc = eexec rsync "-a --delete '$layout/' '$($build.releases)/$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).app'"
 	$rc = New-BuildDirectory -Template "$($Global:DIRNAME)/macos" -Destination $build.buildDir -build $null
 	$rc = New-BuildDirectory -Destination "$($build.buildDir)/Contents/MacOS" -build $build
 	$build | Out-InfoPlist -Destination "$($build.buildDir)/Contents"
-	Copy-Item $build.buildDir -Destination "$($build.releases)/$($build.PRODUCT_FULLNAME)-$($build.version).$($build.number).app" -Recurse -Container -Force
+	Copy-Item $build.buildDir -Destination "$($build.releases)/$($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).app" -Recurse -Container -Force
 	eoutdent
 }
 
@@ -288,14 +300,14 @@ if ($App) {
 #>
 
 if ($Dmg) {
-	etitle("Build " + $build.PRODUCT_FULLNAME + ".dmg")
+	etitle("Build " + $build.PRODUCT_SHORTNAME + ".dmg")
 	eindent
-	if (fileExist "'$("/tmp/" + $build.PRODUCT_FULLNAME + ".dmg")'") { eexec Remove-Item -Recurse "'$("/tmp/" + $build.PRODUCT_FULLNAME + ".dmg")'" -Force }
-	Copy-Item $build.buildDir -Destination "$($build.releases)/$($build.PRODUCT_FULLNAME).app" -Recurse -Container -Force
-	$rc = eexec hdiutil $("create '/tmp/" + $build.PRODUCT_FULLNAME + ".dmg' -ov -volname '" + $build.PRODUCT_FULLNAME + "' -fs HFS+ -srcfolder '$($build.releases)/$($build.PRODUCT_FULLNAME).app'")
-	$rc = eexec hdiutil $("convert '/tmp/" + $build.PRODUCT_FULLNAME + ".dmg' -format UDBZ -o '$($build.releases + "/" + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")'")
+	if (fileExist "'$("/tmp/" + $build.PRODUCT_SHORTNAME + ".dmg")'") { eexec Remove-Item -Recurse "'$("/tmp/" + $build.PRODUCT_SHORTNAME + ".dmg")'" -Force }
+	Copy-Item $build.buildDir -Destination "$($build.releases)/$($build.PRODUCT_SHORTNAME).app" -Recurse -Container -Force
+	$rc = eexec hdiutil $("create '/tmp/" + $build.PRODUCT_SHORTNAME + ".dmg' -ov -volname '" + $build.PRODUCT_SHORTNAME + "' -fs HFS+ -srcfolder '$($build.releases)/$($build.PRODUCT_SHORTNAME).app'")
+	$rc = eexec hdiutil $("convert '/tmp/" + $build.PRODUCT_SHORTNAME + ".dmg' -format UDBZ -o '$($build.releases + "/" + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".dmg")'")
 	$rc = $?
-	Remove-Item -Recurse "$($build.releases)/$($build.PRODUCT_FULLNAME).app" -Force
+	Remove-Item -Recurse "$($build.releases)/$($build.PRODUCT_SHORTNAME).app" -Force
 	eoutdent
 }
 
@@ -315,10 +327,10 @@ if ($Pkg) {
 	eindent
 	if (dirExist "$($build.buildDir)") { $rc = eexec Remove-Item -Recurse "'$($build.buildDir)'" -Force -ErrorAction:SilentlyContinue }
 	$rc = New-BuildDirectory -Destination $build.buildDir -build $build
-	Copy-Item "$($Global:DIRNAME)/build.rc" "$($Global:DIRNAME)/macos/Contents/Scripts/"
-	$rc = eexec pkgbuild "--root '$($build.buildDir)' --identifier $($build.PRODUCT_ID) --version $($build.version).$($build.number) --install-location $($build.DEFAULT_MACOS_INSTALL_DIR + "/" + $build.PRODUCT_SHORTNAME) --ownership recommended --scripts $($Global:DIRNAME)/macos/Contents/Scripts '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
+	Copy-Item "$($build.root)/build/build.rc" "$($build.root)/build/macos/Contents/Scripts/"
+	$rc = eexec pkgbuild "--root '$($build.buildDir)' --identifier $($build.PRODUCT_ID) --version $($build.version).$($build.number) --install-location $($build.DEFAULT_MACOS_INSTALL_DIR + "/" + $build.PRODUCT_SHORTNAME) --ownership recommended --scripts $($build.root)/build/macos/Contents/Scripts '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
 	# $build | Out-DistributionXML -Destination "/tmp"
-	# $rc = eexec productbuild "--distribution /tmp/Distribution.xml --resources $($Global:DIRNAME)/macos/Content/Resources --package-path '$($build.buildDir + "/")' --version $($build.version).$($build.number) '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
+	# $rc = eexec productbuild "--distribution /tmp/Distribution.xml --resources $($Global:DIRNAME)/macos/Content/Resources --package-path '$($build.buildDir + "/")' --version $($build.version).$($build.number) '$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg")'"
 	eoutdent
 }
 
@@ -333,20 +345,41 @@ if ($Pkg) {
  ######## ##    ## ########     ##     ## ########  ######   ######  ##     ##  ######   ########
 
 #>
-if (dirExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".app")
+if ($App) {
+	if (dirExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".app")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".app")
+	} else {
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).app"
+		$ERRORFOUND = $true
+	}
 }
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".dmg")
+
+if ($Dmg) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".dmg")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".dmg")
+	} else {
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).dmg"
+		$ERRORFOUND = $true
+	}
 }
-if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")")) {
-	ewarn("The package have been successfully built.")
-	ewarn("It is available at")
-	ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_FULLNAME + "-" + $build.version + "." + $build.number + ".pkg")
+
+if ($Pkg) {
+	if (fileExist("$($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg")")) {
+		ewarn("The package have been successfully built.")
+		ewarn("It is available at")
+		ewarn($build.releases + [IO.Path]::DirectorySeparatorChar + $build.PRODUCT_SHORTNAME + "-" + $build.version + "." + $build.number + ".pkg")
+	} else {
+		eerror "An error occured while building $($build.PRODUCT_SHORTNAME)-$($build.version).$($build.number).pkg"
+		$ERRORFOUND = $true
+	}
+}
+
+if ($ERRORFOUND) {
+	efatal("An error occured. Some package were not built.")
 }
 
 #############################
