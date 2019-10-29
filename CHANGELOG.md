@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+-	`PRODUCT_UNINST_ROOT_KEY` unused.
+-	`PRODUCT_UNINST_KEY` no more needed. `build.pwsh` guesses it.
+
 ## [1.0.0] - 2019.09.16
 
 ### Added

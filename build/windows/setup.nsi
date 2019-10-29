@@ -45,7 +45,7 @@ VIAddVersionKey "FileVersion" "${VERSION}.${NUMBER}"
 VIProductVersion "${VERSION}.${NUMBER}"
 ;VIProductVersion "1.0.0.0"
 
-PRODUCT_UNINST_KEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_SHORTNAME}"
+!define PRODUCT_UNINST_KEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_SHORTNAME}"
 
 #
 # Pages
